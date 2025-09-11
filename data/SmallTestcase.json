@@ -1,0 +1,288 @@
+{
+  "externalComponents": [],
+  "informationObjects": [
+    {
+      "name":  "MA",
+      "nameShort": "MA",
+      "externalComponent": null
+    },
+    {
+      "name":  "MB",
+      "nameShort": "MB",
+      "externalComponent": null
+    },
+    {
+      "name":  "VER",
+      "nameShort": "VER",
+      "externalComponent": null
+    },
+    {
+      "name":  "ANF",
+      "nameShort": "ANF",
+      "externalComponent": null
+    },
+    {
+      "name":  "ANG",
+      "nameShort": "ANG",
+      "externalComponent": null
+    },
+    {
+      "name":  "AUF",
+      "nameShort": "AUF",
+      "externalComponent": null
+    },
+    {
+      "name":  "PRO",
+      "nameShort": "PRO",
+      "externalComponent": null
+    },
+    {
+      "name":  "LB",
+      "nameShort": "LB",
+      "externalComponent": null
+    },
+    {
+      "name":  "SL",
+      "nameShort": "SL",
+      "externalComponent": null
+    }
+  ],
+  "functions": [
+    {
+      "name":  "AnfErf",
+      "nameShort": "AnfErf",
+      "externalComponent": null},
+    {
+      "name":  "SLAuf",
+      "nameShort": "SLAuf",
+      "externalComponent": null
+    },
+    {
+      "name":  "ZulAnf",
+      "nameShort": "ZulAnf",
+      "externalComponent": null
+    },
+    {
+      "name":  "LBErm",
+      "nameShort": "LBErm",
+      "externalComponent": null
+    },
+    {
+      "name":  "PKPla",
+      "nameShort": "PKPla",
+      "externalComponent": null
+    },
+    {
+      "name":  "AngErs",
+      "nameShort": "AngErs",
+      "externalComponent": null
+    },
+    {
+      "name":  "AngPrü",
+      "nameShort": "AngPrü",
+      "externalComponent": null
+    },
+    {
+      "name":  "AngNac",
+      "nameShort": "AngNac",
+      "externalComponent": null
+    },
+    {
+      "name":  "AngGen",
+      "nameShort": "AngGen",
+      "externalComponent": null
+    },
+    {
+      "name":  "AngAnb",
+      "nameShort": "AngAnb",
+      "externalComponent": null
+    }
+  ],
+  "actors": [],
+  "relations": [
+    {
+      "type": 0,
+      "from": "AnfErf",
+      "to": "SLAuf"
+    },
+    {
+      "type": 1,
+      "from": "SLAuf",
+      "to": "ZulAnf"
+    },
+    {
+      "type": 1,
+      "from": "SLAuf",
+      "to": "LBErm"
+    },
+    {
+      "type": 0,
+      "from": "ZulAnf",
+      "to": "AngErs"
+    },
+    {
+      "type": 1,
+      "from": "LBErm",
+      "to": "PKPla"
+    },
+    {
+      "type": 1,
+      "from": "LBErm",
+      "to": "AngErs"
+    },
+    {
+      "type": 0,
+      "from": "PKPla",
+      "to": "AngErs"
+    },
+    {
+      "type": 0,
+      "from": "AngErs",
+      "to": "AngPrü"
+    },
+    {
+      "type": 1,
+      "from": "AngPrü",
+      "to": "AngGen"
+    },
+    {
+      "type": 2,
+      "from": "AngNac",
+      "to": "AngPrü"
+    },
+    {
+      "type": 0,
+      "from": "AngGen",
+      "to": "AngAnb"
+    },
+    {
+      "type": 3,
+      "from": "AnfErf",
+      "to": "ANF"
+    },
+    {
+      "type": 4,
+      "from": "AnfErf",
+      "to": "PRO"
+    },
+    {
+      "type": 3,
+      "from": "SLAuf",
+      "to": "SL"
+    },{
+      "type": 4,
+      "from": "SLAuf",
+      "to": "ANF"
+    },
+    {
+      "type": 3,
+      "from": "ZulAnf",
+      "to": "AUF"
+    },
+    {
+      "type": 4,
+      "from": "ZulAnf",
+      "to": "SL"
+    },
+    {
+      "type": 3,
+      "from": "LBErm",
+      "to": "LB"
+    },
+    {
+      "type": 4,
+      "from": "LBErm",
+      "to": "SL"
+    },
+    {
+      "type": 3,
+      "from": "PKPla",
+      "to": "MB"
+    },
+    {
+      "type": 4,
+      "from": "PKPla",
+      "to": "MA"
+    },
+    {
+      "type": 4,
+      "from": "PKPla",
+      "to": "SL"
+    },
+    {
+      "type": 3,
+      "from": "AngErs",
+      "to": "ANG"
+    },
+    {
+      "type": 4,
+      "from": "AngErs",
+      "to": "ANF"
+    },
+    {
+      "type": 4,
+      "from": "AngPrü",
+      "to": "ANG"
+    },
+    {
+      "type": 4,
+      "from": "AngNac",
+      "to": "ANF"
+    },
+    {
+      "type": 5,
+      "from": "AngNac",
+      "to": "ANG"
+    },
+    {
+      "type": 4,
+      "from": "AngGen",
+      "to": "ANG"
+    },
+    {
+      "type": 4,
+      "from": "AngAnb",
+      "to": "ANG"
+    },
+    {
+      "type": 7,
+      "from": "MB",
+      "to": "MA"
+    },
+    {
+      "type": 7,
+      "from": "VER",
+      "to": "PRO"
+    },
+    {
+      "type": 9,
+      "from": "ANF",
+      "to": "VER"
+    },
+    {
+      "type": 9,
+      "from": "ANG",
+      "to": "VER"
+    },
+    {
+      "type": 9,
+      "from": "AUF",
+      "to": "VER"
+    },
+    {
+      "type": 7,
+      "from": "PRO",
+      "to": "LB"
+    },
+    {
+      "type": 8,
+      "from": "PRO",
+      "to": "SL"
+    },
+    {
+      "type": 7,
+      "from": "SL",
+      "to": "PRO"
+    }
+  ]
+}

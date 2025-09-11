@@ -1,0 +1,13 @@
+namespace MA_GA.models.enums;
+
+public enum ObjectiveType
+{
+    BALANCENESS,
+    MAX_MODULARITY,
+    MAXIMISE_COHESION,
+    MAXIMISE_AVG_COHESION,
+    MAXIMISE_MEDIAN_COHESION,
+    MINIMISE_COUPLING,
+    OPTIMAL_SIZED_MODULES,
+
+}
