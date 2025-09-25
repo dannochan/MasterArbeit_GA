@@ -40,7 +40,7 @@ public static class ObjectHelper
             logger.LogError("FunctionObjects is null");
         }
 
-                if (rawObject.informationObjects != null)
+        if (rawObject.informationObjects != null)
         {
             foreach (var item in rawObject.informationObjects)
             {
@@ -98,9 +98,9 @@ public static class ObjectHelper
             RelationType.Create => 20,
             RelationType.Read => 15,
             RelationType.Update => 15,
-            RelationType.RelatedTo => 0,
-            RelationType.PartOf => 0,
-            RelationType.IsA => 0,
+            RelationType.RelatedTo => 15,
+            RelationType.PartOf => 20,
+            RelationType.IsA => 20,
             _ => throw new ArgumentOutOfRangeException(nameof(relationType), "Invalid relation type")
         };
     }

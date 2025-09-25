@@ -10,6 +10,7 @@ public sealed class LinearLinkageEncodingOperator
 {
     public static int COUNT_LOOP_TERMINATION = 100;
 
+
     public static LinearLinkageEncoding DivideRandomModule(LinearLinkageEncoding encoding)
     {
         var moduleWithMultipleGenes = encoding.GetModules()
@@ -195,7 +196,7 @@ public sealed class LinearLinkageEncodingOperator
         }
 
         // Remove any modules that have no indices
-       var newModule =  modules.Where(m => m.GetIndices().Count != 0).ToList();
+        var newModule = modules.Where(m => m.GetIndices().Count != 0).ToList();
 
         // Update the LinearLinkageEncoding with the repaired modules
         return UpdateIntegerGenes(newModule, lle);
@@ -242,7 +243,7 @@ public sealed class LinearLinkageEncodingOperator
         var repaired = new LinearLinkageEncoding(lle.GetGraph(), lle.GetIntegerGenes());
         int attempt = 0;
 
-        int maxAttempts = 10;
+        int maxAttempts = 3;
         while (!repaired.IsValid() && attempt < maxAttempts)
         {
             attempt++;

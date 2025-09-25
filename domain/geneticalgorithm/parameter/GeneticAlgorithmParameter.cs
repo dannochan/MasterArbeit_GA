@@ -46,8 +46,8 @@ public class GeneticAlgorithmParameter
         int countGeneration,
         int minimumParetoSetSize,
         int maximumParetoSetSize,
-        bool useWeightedSumMethod = false,
-        bool useGreedyPartition = true)
+        bool useWeightedSumMethod,
+        bool useGreedyPartition)
     {
         _chromosomeEncoding = chromosomeEncoding;
         OffspringSelection = offspringSelection;
