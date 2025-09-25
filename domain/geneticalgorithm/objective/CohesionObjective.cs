@@ -20,76 +20,72 @@ public class CohesionObjective : Objective
     public override double CalculateValue(List<Module> modules)
     {
         var visitedEdges = new HashSet<IObjectRelation>();
-        return modules.Where(module => !ModuleInformationService.IsIsolated(module, graph)).Sum(module =>
-        {
-            var edges = ModuleInformationService.GetModuleEdges(module, graph);
-            var edgeTypeCounts = CalculateEdgeTypeCounts(module, edges);
-            var maxMPScontribution = (edgeTypeCounts["BPS"] * (edgeTypeCounts["BPS"] - 1.0)) / 2.0;
-            var maxIOcontribution = (edgeTypeCounts["IO"] * (edgeTypeCounts["IO"] - 1.0)) / 2.0;
-            var maxBPS_IOcontribution = edgeTypeCounts["BPS"] * edgeTypeCounts["IO"];
-            var maxCohesionOfTheModule = maxIOcontribution * 20.0 + maxMPScontribution * 25.0 + maxBPS_IOcontribution * 20.0;
-
-            double sum = 0.0;
-            foreach (var edge in edges)
+        return modules
+            .Where(module => !ModuleInformationService.IsIsolated(module, graph))
+            .Sum(module =>
             {
-                if (visitedEdges.Contains(edge))
+
+
+                var edges = ModuleInformationService.GetModuleEdges(module, graph);
+                var edgeTypeCounts = CalculateObjectTypeCounts(module);
+                double bpsCount = edgeTypeCounts["BPS"];
+                double ioCount = edgeTypeCounts["IO"];
+
+                double maxMpsContribution = (bpsCount * (bpsCount - 1.0)) / 2.0;
+                double maxIoContribution = (ioCount * (ioCount - 1.0)) / 2.0;
+                double maxBpsIoContribution = bpsCount * ioCount;
+                double maxCohesion = maxIoContribution * 20.0 + maxMpsContribution * 25.0 + maxBpsIoContribution * 20.0;
+
+                double totalEdgeWeightOfTheModule = 0.0;
+                foreach (var edge in edges)
                 {
-                    continue; // Skip already visited edges
+                    if (visitedEdges.Contains(edge))
+                        continue;
+                    visitedEdges.Add(edge);
+                    bool sourceInModule = module.CheckIndexInModule(edge.Source.GetIndex());
+                    bool targetInModule = module.CheckIndexInModule(edge.Target.GetIndex());
+
+                    if (sourceInModule && targetInModule)
+                    {
+
+                        totalEdgeWeightOfTheModule += edge.Weight;
+                    }
                 }
-                visitedEdges.Add(edge);
-                var source = edge.Source;
-                var target = edge.Target;
 
-                if (module.CheckIndexInModule(source.GetIndex()) && module.CheckIndexInModule(target.GetIndex()))
-                {
-                    sum += edge.Weight;
-
-                }
-
-            }
-
-            double actualCohesion = sum / maxCohesionOfTheModule;
-            double edgeCount = edgeTypeCounts["BPS"] + edgeTypeCounts["IO"];
-            double weightedCohesion = actualCohesion * (edgeCount / (double)graph.GetGraph().VertexCount);
-            return weightedCohesion * 100.0; // return as percentage
-        });
+                double actualCohesion = maxCohesion > 0.0 ? totalEdgeWeightOfTheModule / maxCohesion : 0.0;
+                double objectTypeCount = bpsCount + ioCount;
+                double vertexCount = (double)graph.GetGraph().VertexCount;
+                double weightedCohesion = vertexCount > 0.0 ? actualCohesion * (objectTypeCount / vertexCount) : 0.0;
+                return weightedCohesion * 100; // return as percentage
+            });
     }
 
-    private static Dictionary<string, double> CalculateEdgeTypeCounts(Module module, List<ObjectRelation> edges)
+    private Dictionary<string, double> CalculateObjectTypeCounts(Module module)
     {
         var edgeTypeCounts = new Dictionary<string, double>
             {
                 { "BPS", 0.0 },
-                { "IO", 0.0 },
-                { "BPS_IO", 0.0 }
+                { "IO", 0.0 }
             };
 
-        foreach (var edge in edges)
+        var vertexIndicesInModule = new HashSet<int>(module.GetIndices().ToList());
+        foreach (var vertexIndex in vertexIndicesInModule)
         {
-            var sourceType = edge.Source.ObjectType;
-            var targetType = edge.Target.ObjectType;
-            var isInModule = module.CheckIndexInModule(edge.Source.GetIndex()) && module.CheckIndexInModule(edge.Target.GetIndex());
-            if (!isInModule)
+            var vertex = graph.GetGraph().Vertices.FirstOrDefault(v => v.GetIndex() == vertexIndex);
+            if (vertex != null)
             {
-                continue; // Skip edges where both nodes are not in the module
-            }
-
-            if (sourceType == ObjectType.FunctionObject && targetType == ObjectType.FunctionObject)
-            {
-                edgeTypeCounts["BPS"]++;
-            }
-            else if (sourceType == ObjectType.InformationObject && targetType == ObjectType.InformationObject)
-            {
-                edgeTypeCounts["IO"]++;
-            }
-            else if (
-                (sourceType == ObjectType.FunctionObject && targetType == ObjectType.InformationObject) ||
-                (sourceType == ObjectType.InformationObject && targetType == ObjectType.FunctionObject)
-            )
-            {
-                edgeTypeCounts["BPS_IO"]++;
+                var objectType = vertex.ObjectType;
+                if (objectType == ObjectType.FunctionObject)
+                {
+                    edgeTypeCounts["BPS"] += 1.0;
+                }
+                else if (objectType == ObjectType.InformationObject)
+                {
+                    edgeTypeCounts["IO"] += 1.0;
+                }
             }
         }
+
 
         return edgeTypeCounts;
     }
