@@ -59,12 +59,40 @@ public class LinearLinkageEncoding : ChromosomeBase
 
     public override IChromosome CreateNew()
     {
-        var CloneGenes = IntegerGenes.Select(g => new Gene(g.Value)).ToList();
+        List<Gene> newGenes = CreateRandomGeneList();
 
-        var encoding = new LinearLinkageEncoding(BaseGraph, CloneGenes);
+        var encoding = new LinearLinkageEncoding(BaseGraph, newGenes);
 
-        return encoding;
+        return MutateLinearLinkageEncoding(encoding);
 
+    }
+
+    private List<Gene> CreateRandomGeneList()
+    {
+        var rnd = RandomizationProvider.Current;
+        var length = Length;
+        var newGenes = new List<Gene>(length);
+
+        for (int i = 0; i < length; i++)
+        {
+            int allele = rnd.GetInt(i, length - 1); // linear linkage constraint
+            newGenes.Add(new Gene(allele));
+        }
+
+        return newGenes;
+    }
+
+    private IChromosome MutateLinearLinkageEncoding(LinearLinkageEncoding encoding)
+    {
+        var random = RandomizationProvider.Current;
+        var value = random.GetDouble();
+        if (value < 1.0d / 3.0d)
+        {
+            return LinearLinkageEncodingOperator.DivideRandomModule(encoding);
+        }
+        else if (value < 2.0d / 3.0d)
+        { if (LinearLinkageEncodingInformationService.GetNumberOfNonIsolatedModules(encoding) > 2) { return LinearLinkageEncodingOperator.CombineRandomGroup(encoding); } }
+        return LinearLinkageEncodingOperator.MoveRandomGeneToIncidentModule(encoding);
     }
 
     public List<Gene> GetIntegerGenes()
