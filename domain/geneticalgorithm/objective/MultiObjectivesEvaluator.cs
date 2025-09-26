@@ -34,6 +34,13 @@ public class MultiObjectivesEvaluator
                 // return lower fitness for invalid solution
                 lle = LinearLinkageEncodingOperator.FixLinearLinkageEncoding(lle);
             }
+
+            if (LinearLinkageEncodingInformationService.IsModuleWithOnlyInformationObjects(lle))
+            {
+                // return lower fitness for invalid solution
+                lle = LinearLinkageEncodingOperator.FixLinearLinkageEncoding(lle);
+            }
+
         }
         var _sumObjectiveWeights = _objectives.Sum(o => o.GetWeight());
         return _objectives.Select(obj =>
@@ -49,6 +56,12 @@ public class MultiObjectivesEvaluator
                 return weightedValue *= -1;
             }
             if (LinearLinkageEncodingInformationService.IsMonolith(lle))
+            {
+                // return lower fitness for monolith solution
+                return weightedValue *= weightedValue > 0 ? 0.5 : 2;
+            }
+
+            if (LinearLinkageEncodingInformationService.IsModuleWithOnlyInformationObjects(lle))
             {
                 // return lower fitness for monolith solution
                 return weightedValue *= weightedValue > 0 ? 0.5 : 2;

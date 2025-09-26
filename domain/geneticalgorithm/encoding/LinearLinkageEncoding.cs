@@ -63,6 +63,11 @@ public class LinearLinkageEncoding : ChromosomeBase
 
         var encoding = new LinearLinkageEncoding(BaseGraph, newGenes);
 
+        if (!encoding.IsValid())
+        {
+            encoding = LinearLinkageEncodingOperator.FixLinearLinkageEncoding(encoding);
+        }
+
         return MutateLinearLinkageEncoding(encoding);
 
     }
@@ -91,7 +96,12 @@ public class LinearLinkageEncoding : ChromosomeBase
             return LinearLinkageEncodingOperator.DivideRandomModule(encoding);
         }
         else if (value < 2.0d / 3.0d)
-        { if (LinearLinkageEncodingInformationService.GetNumberOfNonIsolatedModules(encoding) > 2) { return LinearLinkageEncodingOperator.CombineRandomGroup(encoding); } }
+        {
+            if (LinearLinkageEncodingInformationService.GetNumberOfNonIsolatedModules(encoding) > 2)
+            {
+                return LinearLinkageEncodingOperator.CombineRandomGroup(encoding);
+            } 
+        }
         return LinearLinkageEncodingOperator.MoveRandomGeneToIncidentModule(encoding);
     }
 
