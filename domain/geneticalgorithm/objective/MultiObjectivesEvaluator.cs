@@ -26,6 +26,15 @@ public class MultiObjectivesEvaluator
     public double[] EvaluateAll(IChromosome chromosome)
     {
         var lle = chromosome as LinearLinkageEncoding;
+        lock (lle)
+        {
+
+            if (LinearLinkageEncodingInformationService.IsOneModuleConsistOfOneEdge(lle))
+            {
+                // return lower fitness for invalid solution
+                lle = LinearLinkageEncodingOperator.FixLinearLinkageEncoding(lle);
+            }
+        }
         var _sumObjectiveWeights = _objectives.Sum(o => o.GetWeight());
         return _objectives.Select(obj =>
         {
@@ -42,15 +51,8 @@ public class MultiObjectivesEvaluator
             if (LinearLinkageEncodingInformationService.IsMonolith(lle))
             {
                 // return lower fitness for monolith solution
-                return weightedValue *= 0.5;
+                return weightedValue *= weightedValue > 0 ? 0.5 : 2;
             }
-            if (LinearLinkageEncodingInformationService.IsOneModuleConsistOfOneEdge(lle))
-            {
-                // return lower fitness for invalid solution
-                return weightedValue *= 0.5;
-            }
-     ;
-
             return weightedValue;
         }).ToArray();
     }
