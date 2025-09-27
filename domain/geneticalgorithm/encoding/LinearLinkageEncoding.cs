@@ -188,7 +188,7 @@ public class LinearLinkageEncoding : ChromosomeBase
 
     public List<Module> GetModules()
     {
-        return Modules;
+        return Modules.ToList();
     }
 
     public override LinearLinkageEncoding Clone()

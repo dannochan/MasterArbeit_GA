@@ -165,12 +165,11 @@ public sealed class LinearLinkageEncodingInformationService
 
     public static bool IsModuleWithOnlyInformationObjects(LinearLinkageEncoding encoding)
     {
+        var graph = encoding.GetGraph();
 
-        var graph = encoding.GetGraph().GetGraph();
-
-        var modules = encoding.GetModules().Where(module => !ModuleInformationService.IsIsolated(module, encoding.GetGraph())).ToList();
+        var modules = encoding.GetModules();
 
         return modules.Any(module =>
-            module.GetIndices().All(index => graph.Vertices.ElementAt(index).ObjectType == ObjectType.InformationObject));
+            module.GetIndices().All(index => graph.GetModularisableElementByIndex(index) is DataObject dataObject && dataObject.ObjectType == ObjectType.InformationObject));
     }
 }
