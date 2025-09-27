@@ -138,13 +138,13 @@ public sealed class LinearLinkageEncodingOperator
 
     public static LinearLinkageEncoding RepairModulesWithOnlyInformationObjects(LinearLinkageEncoding lle)
     {
-        var knowledgeGraph = lle.GetGraph();
+        var linkageGraph = lle.GetGraph();
         var modules = new HashSet<Module>(lle.GetModules());
 
         // Identify modules with only information objects that are not isolated
         var invalidModules = lle.GetModules()
             .Where(m => m.GetIndices().Count >= 1
-                        && m.GetIndices().All(index => knowledgeGraph.GetGraph().Vertices.ElementAt(index).ObjectType == ObjectType.InformationObject))
+                        && m.GetIndices().All(index => linkageGraph.GetModularisableElementByIndex(index) is DataObject dataObject && dataObject.ObjectType == ObjectType.InformationObject))
             .ToList();
 
         var rnd = RandomizationProvider.Current;
