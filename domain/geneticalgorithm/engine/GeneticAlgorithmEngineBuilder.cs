@@ -5,7 +5,6 @@ using MA_GA.domain.geneticalgorithm.parameter;
 using MA_GA.domain.geneticalgorithm.encoding;
 using System.Text.RegularExpressions;
 using MA_GA.domain.geneticalgorithm.crossover;
-using MA_GA.domain.geneticalgorithm.selection;
 using MA_GA.domain.geneticalgorithm.mutation;
 using MA_GA.domain.reinsertion;
 
@@ -145,19 +144,8 @@ public class GeneticAlgorithmEngineBuilder
                 ? LinearLinkageEncodingInitialiser.InitializeLinearLinkageEncodingWithGreedyAlgorithm(graph)
                 : Genotypeinitializer.GenerateGenotypeWithModulesForEachConnectedComponet(graph);
 
-            /*  for checking initial chromosome      
-            var initialChrome = geneticAlgorithmParameter.UseGreedyPartition
-                        ? LinearLinkageEncodingInitialiser.InitializeLinearLinkageEncodingWithGreedyAlgorithm(graph)
-                        : Genotypeinitializer.GenerateGenotypeWithModulesForEachConnectedComponet(graph);
-            var lle = (LinearLinkageEncoding)initialChrome;
 
-            Console.WriteLine("Initial Chromosome:");
-            lle.DisplayChromosome();
-            Console.WriteLine("END of Initial Chromosome");
-
- */
-
-            return new Population(5, 30, chromosome);
+            return new Population(20, 100, chromosome);
         }
     }
 }
