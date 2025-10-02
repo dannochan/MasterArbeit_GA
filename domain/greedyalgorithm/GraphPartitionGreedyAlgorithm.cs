@@ -10,9 +10,9 @@ namespace MA_GA.domain.GreedyAlgorithm;
 public class GraphPartitionGreedyAlgorithm
 {
 
-    private Dictionary<int, List<IObjectRelation>> PriorityList { get; set; }
+    private Dictionary<double, List<IObjectRelation>> PriorityList { get; set; }
 
-    private Dictionary<string, int> VertexWeights { get; set; }
+    private Dictionary<string, double> VertexWeights { get; set; }
 
     private AdjacencyGraph<DataObject, IObjectRelation> InitGraph { get; set; }
 
@@ -23,8 +23,8 @@ public class GraphPartitionGreedyAlgorithm
     public GraphPartitionGreedyAlgorithm(AdjacencyGraph<DataObject, IObjectRelation> graph)
     {
         InitGraph = graph.Clone() ?? throw new ArgumentNullException(nameof(graph), "Graph cannot be null");
-        PriorityList = new Dictionary<int, List<IObjectRelation>>();
-        VertexWeights = new Dictionary<string, int>();
+        PriorityList = new Dictionary<double, List<IObjectRelation>>();
+        VertexWeights = new Dictionary<string, double>();
     }
 
     /// <summary>
@@ -54,13 +54,6 @@ public class GraphPartitionGreedyAlgorithm
                 {
                     var sortedGroup = group.OrderByDescending(edge => edge.SourceObject.Weight + edge.TargetObject.Weight).ToList();
 
-                    // TODO: how to handle information objects?
-                    // remove edges that have vertices that are information objects
-                    /*
-                    sortedGroup.RemoveAll(edge =>
-                        edge.SourceObject.ObjectType == ObjectType.InformationObject ||
-                        edge.TargetObject.ObjectType == ObjectType.InformationObject);
-                     */
                     foreach (var edge in sortedGroup)
                     {
                         if (!PriorityList.ContainsKey(edge.Weight))
@@ -89,7 +82,7 @@ public class GraphPartitionGreedyAlgorithm
         var newGraph = InitGraph.Clone() ?? throw new ArgumentNullException(nameof(InitGraph), "Graph cannot be null");
 
         // remove vertex that are information objects
-       // newGraph.RemoveVertexIf(vertex => vertex.ObjectType == ObjectType.InformationObject);
+        // newGraph.RemoveVertexIf(vertex => vertex.ObjectType == ObjectType.InformationObject);
 
 
         // Implement the partitioning logic here

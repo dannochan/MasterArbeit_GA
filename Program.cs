@@ -22,8 +22,53 @@ class MainApp
         // define the path to the JSON file
         string filePath = Path.Combine(dir, "data", "SmallTestcase.json");
         string filePath2 = Path.Combine(dir, "data", "BigTestcase-2.json");
+
+        // define genetic algorithm parameters
+        // create ga parameter for engine
+        var geneticAlgorithmParameter = new GeneticAlgorithmParameter(
+            "Interger",
+            "Tournament",
+            "ElitismSelection",
+            "GroupCrossover",
+            "GraftMutation",
+            100, // Population size
+            0.8f, // Crossover rate
+            0.5f, // Mutation rate
+            100, // Max generations
+            5, // Tournament size
+            0.5f, // Elitism count
+            0.01, // Converged gene rate
+            0.01, // Convergence rate
+            0, // Count generation
+            10, // Minimum Pareto set size
+            100, // Maximum Pareto set size
+            true, // Set to true to use weighted sum method
+            true // Set to true to use greedy partition
+        )
+        {
+
+        };
+
+        // define the weights for different relation types
+        // you can adjust these weights based on your requirements
+        var dataObjectRelationWeight = new DataObjectRelationWeight(
+            20.0, // conjunctionWeight
+             15.0, // disjunctionWeight
+              25.0, // exclusiveDisjunctionWeight
+               20.0, // createWeight
+               15.0, // readWeight
+                15.0, // updateWeight 
+                0.0,  // deleteWeight
+                 15.0, // relatedToWeight
+                  20.0, // partOfWeight
+                  20.0) // isAWeight
+        {
+
+        };
         // object to hold the data
-        Graph dataObjectCenter = new Graph();
+        Graph dataObjectCenter = new Graph(dataObjectRelationWeight);
+
+
         GraphObject rawObject;
 
         using (StreamReader sr = new StreamReader(filePath))
@@ -66,7 +111,7 @@ class MainApp
         // Run the genetic algorithm engine
         for (int i = 0; i < 10; i++)
         {
-            RunGAEngine(logger, dataObjectCenter);
+            RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameter);
         }
 
 
@@ -95,32 +140,9 @@ class MainApp
         }
     }
 
-    private static void RunGAEngine(ILogger logger, Graph dataObjectCenter)
+    private static void RunGAEngine(ILogger logger, Graph dataObjectCenter, GeneticAlgorithmParameter geneticAlgorithmParameter)
     {
-        // create ga parameter for engine
-        var geneticAlgorithmParameter = new GeneticAlgorithmParameter(
-            "Interger",
-            "Roulette",
-            "ElitismSelection",
-            "GroupCrossover",
-            "GraftMutation",
-            100, // Population size
-            0.8f, // Crossover rate
-            0.7f, // Mutation rate
-            100, // Max generations
-            5, // Tournament size
-            0.5f, // Elitism count
-            0.01, // Converged gene rate
-            0.01, // Convergence rate
-            0, // Count generation
-            10, // Minimum Pareto set size
-            100, // Maximum Pareto set size
-            true, // Set to true to use weighted sum method
-            true
-        )
-        {
 
-        };
         var gaEngine = new MainGeneticAlgorithmEngine();
         logger.LogInformation("Running genetic algorithm engine.");
         var optimizationResult = gaEngine.run(dataObjectCenter, geneticAlgorithmParameter);

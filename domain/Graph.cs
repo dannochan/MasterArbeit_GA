@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using GeneticSharp;
 using MA_GA.domain;
+using MA_GA.domain.geneticalgorithm.parameter;
 using QuikGraph;
 using QuikGraph.Graphviz;
 
@@ -27,11 +28,15 @@ public class Graph
     private readonly AdjacencyGraph<DataObject, IObjectRelation> _Graph;
 
     private readonly ConcurrentDictionary<ModularisableElement, List<ModularisableElement>> IncidentModularisableElements;
+
+    private readonly DataObjectRelationWeight _dataObjectRelationWeight;
     private int EDGE_COUNT = 0;
 
 
-    public Graph()
+
+    public Graph(DataObjectRelationWeight dataObjectRelationWeight)
     {
+        _dataObjectRelationWeight = dataObjectRelationWeight;
         nodeObjects = new List<IDataObject>();
         edgeObjects = new List<IObjectRelation>();
         _Graph = GraphService.CreateAdjacencyGraph();
@@ -79,8 +84,8 @@ public class Graph
         _Graph.AddEdge(relation);
         _edgeDictionary.Add(EDGE_COUNT++, relation);
         // update vertex weights based on relation type
-        relation.SourceObject.UpdateWeight(ObjectHelper.ConvertRelationTypeToWeight(relation.RelationType));
-        relation.TargetObject.UpdateWeight(ObjectHelper.ConvertRelationTypeToWeight(relation.RelationType));
+        relation.SourceObject.UpdateWeight(ObjectHelper.ConvertRelationTypeToWeight(relation.RelationType, _dataObjectRelationWeight ));
+        relation.TargetObject.UpdateWeight(ObjectHelper.ConvertRelationTypeToWeight(relation.RelationType, _dataObjectRelationWeight));
 
     }
 
@@ -240,5 +245,10 @@ public class Graph
             .Where(e => e.Source.GetIndex() == index || e.Target.GetIndex() == index)
             .Select(e => (ObjectRelation)e)
             .ToList();
+    }
+
+    public DataObjectRelationWeight GetDataObjectRelationWeight()
+    {
+        return _dataObjectRelationWeight;
     }
 }

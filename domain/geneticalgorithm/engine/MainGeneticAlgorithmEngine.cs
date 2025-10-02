@@ -4,6 +4,7 @@ using MA_GA.domain.geneticalgorithm.encoding;
 using MA_GA.domain.geneticalgorithm.fitnessfunction;
 using MA_GA.domain.geneticalgorithm.objective;
 using MA_GA.domain.geneticalgorithm.parameter;
+using MA_GA.domain.module;
 using MA_GA.models.optimizationresult;
 using MA_GA.Models;
 
@@ -72,9 +73,10 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
         // TODO: move to genetic parameter settings
         var objectives = new List<Objective>
         {
-                 new CohesionObjective(graph, 1),
-                  new CouplingObjective(graph, 1),
-                  new ModularityObjective(graph, 1),
+                new CohesionObjective(graph, 1),
+                new CouplingObjective(graph, 1),
+                //optional 
+          //      new ModularityObjective(graph, 1),
         };
 
         var fitnessFunction = new FitnessFunction(objectives, graph);
@@ -88,8 +90,8 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
             .CreatingEngineForWeightedSumProblem();
 
         var taskExecutor = new ParallelTaskExecutor();
-        taskExecutor.MinThreads = 1;
-        taskExecutor.MaxThreads = 20;
+        taskExecutor.MinThreads = 2;
+        taskExecutor.MaxThreads = 40;
         geneticAlgorithmEngine.TaskExecutor = taskExecutor;
 
 
@@ -100,7 +102,20 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
         Console.WriteLine($"Best Fitness: {geneticAlgorithmEngine.BestChromosome.Fitness.Value}");
         // print modules of the best chromosome
         var BestChromosome = new LinearLinkageEncoding(geneticAlgorithmEngine.BestChromosome, graph);
+
         BestChromosome?.DisplayChromosome();
+
+        var testCohesionObjective = new CohesionObjective(graph, 1);
+        var cohesionValue = testCohesionObjective.CalculateValue(BestChromosome.GetModules());
+        Console.WriteLine($"Cohesion Value of the best solution: {cohesionValue}");
+
+        var testCouplingObjective = new CouplingObjective(graph, 1.5);
+        var couplingValue = testCouplingObjective.CalculateValue(BestChromosome.GetModules());
+        Console.WriteLine($"Coupling Value of the best solution: {couplingValue}");
+
+        var testModularityObjective = new ModularityObjective(graph, 1);
+        var modularityValue = testModularityObjective.CalculateValue(BestChromosome.GetModules());
+        Console.WriteLine($"Modularity Value of the best solution: {modularityValue}");
 
         var time = geneticAlgorithmEngine.TimeEvolving;
         Console.WriteLine($"Time taken: {time.TotalSeconds} seconds");

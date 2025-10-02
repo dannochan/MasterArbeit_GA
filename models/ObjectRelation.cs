@@ -15,13 +15,14 @@ public class ObjectRelation :  IObjectRelation
 
     public DataObject Target { get; set; }
 
-    public int Weight { get; set; }
+    public double Weight { get; set; }
 
     public string Component { get; set; }
 
     public ObjectRelation(int edgeNumber, RelationType relationType,
     DataObject sourceObject,
-    DataObject targetObject)
+    DataObject targetObject,
+    double weight)
     {
         EdgeNumber = edgeNumber;
         RelationType = relationType;
@@ -29,7 +30,7 @@ public class ObjectRelation :  IObjectRelation
         TargetObject = targetObject;
         Source = sourceObject;
         Target = targetObject;
-        Weight = ObjectHelper.ConvertRelationTypeToWeight(relationType);
+        Weight = weight;
     }
 
 /*

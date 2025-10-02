@@ -14,7 +14,7 @@ public class DataObject : ModularisableElement, IDataObject
 
     public bool? isExternalComponent { get; set; }
 
-    public int Weight { get; set; } // Default weight, can be adjusted based on relation type
+    public double Weight { get; set; } // Default weight, can be adjusted based on relation type
     public string Component { get; set; } // Component name, if applicable
 
     public List<IObjectRelation> Relations { get; set; }
@@ -37,7 +37,7 @@ public class DataObject : ModularisableElement, IDataObject
         this.isExternalComponent = isExternalComponent;
         this.OriginObjects = new List<IDataObject>();
         this.TargetObjects = new List<IDataObject>();
-        Weight = 0;
+        Weight = 0.0;
         
     }
 
@@ -196,7 +196,7 @@ public class DataObject : ModularisableElement, IDataObject
         return HashCode.Combine(ObjectType, Name, ShortName, isExternalComponent, Relations, OriginObjects, TargetObjects);
     }
 
-    public void UpdateWeight(int newWeight)
+    public void UpdateWeight(double newWeight)
     {
 
         Weight += newWeight;

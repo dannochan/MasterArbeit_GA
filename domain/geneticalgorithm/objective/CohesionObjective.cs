@@ -19,6 +19,9 @@ public class CohesionObjective : Objective
     }
     public override double CalculateValue(List<Module> modules)
     {
+        var maxIOWeight = graph.GetDataObjectRelationWeight().GetMaximalInformationObjectRelationWeight();
+        var maxBpsWeight = graph.GetDataObjectRelationWeight().GetMaximalFunctionWeight();
+        var maxBpsIoWeight = graph.GetDataObjectRelationWeight().GetMaximalBPStoIOWeight();
         var visitedEdges = new HashSet<IObjectRelation>();
         return modules
             .Where(module => !ModuleInformationService.IsIsolated(module, graph))
@@ -34,7 +37,7 @@ public class CohesionObjective : Objective
                 double maxMpsContribution = (bpsCount * (bpsCount - 1.0)) / 2.0;
                 double maxIoContribution = (ioCount * (ioCount - 1.0)) / 2.0;
                 double maxBpsIoContribution = bpsCount * ioCount;
-                double maxCohesion = maxIoContribution * 20.0 + maxMpsContribution * 25.0 + maxBpsIoContribution * 20.0;
+                double maxCohesion = maxIoContribution * maxIOWeight + maxMpsContribution * maxBpsWeight + maxBpsIoContribution * maxBpsIoWeight;
 
                 double totalEdgeWeightOfTheModule = 0.0;
                 foreach (var edge in edges)
