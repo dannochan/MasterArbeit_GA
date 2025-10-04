@@ -23,8 +23,7 @@ class MainApp
         string filePath = Path.Combine(dir, "data", "SmallTestcase.json");
         string filePath2 = Path.Combine(dir, "data", "BigTestcase-2.json");
 
-        // define genetic algorithm parameters
-        // create ga parameter for engine
+        // define genetic algorithm parameters create ga parameter for engine
         var geneticAlgorithmParameter = new GeneticAlgorithmParameter(
             "Interger",
             "Tournament",
@@ -49,8 +48,7 @@ class MainApp
 
         };
 
-        // define the weights for different relation types
-        // you can adjust these weights based on your requirements
+        // define the weights for different relation types. you can adjust these weights based on your requirements
         var dataObjectRelationWeight = new DataObjectRelationWeight(
             20.0, // conjunctionWeight
              15.0, // disjunctionWeight

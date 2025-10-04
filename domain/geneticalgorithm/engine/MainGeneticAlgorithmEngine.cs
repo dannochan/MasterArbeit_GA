@@ -35,18 +35,19 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
     }
 
+/**/
     private GeneticAlgorithmExecutionResult ModularisewithMultiObjectiveFitnessFunction(GeneticAlgorithmParameter geneticAlgorithmParameter, Graph graph, MutationWeight mutationWeight)
     {
 
         // TODO: ADD objective when available
 
-        var fitnessFunction = new MultiObjectiveFitnessFunction();
+      //  var fitnessFunction = new MultiObjectiveFitnessFunction();
 
         // build genetic algorithm engine
         var geneticAlgorithmEngine = new GeneticAlgorithmEngineBuilder.Builder()
             .Graph(graph)
             .GeneticAlgorithmParameter(geneticAlgorithmParameter)
-            .Fitness(new MultiObjectiveFitnessFunction())
+            .Fitness(/*fitnessFunction*/null) // TODO: add multi objective fitness function
             .MutationWeight(mutationWeight)
             .CreatingEngineForMultiObjectiveProblem();
 
@@ -141,18 +142,3 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
 }
 
-
-
-
-internal class MultiObjectiveFitnessFunction : IFitness
-{
-    public MultiObjectiveFitnessFunction()
-    {
-    }
-
-    public double Evaluate(IChromosome chromosome)
-    {
-        chromosome.Fitness = 0.0; // Placeholder for actual fitness evaluation logic
-        return chromosome.Fitness.Value;
-    }
-}
