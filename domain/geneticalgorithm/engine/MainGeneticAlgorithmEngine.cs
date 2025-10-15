@@ -35,13 +35,13 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
     }
 
-/**/
+    /**/
     private GeneticAlgorithmExecutionResult ModularisewithMultiObjectiveFitnessFunction(GeneticAlgorithmParameter geneticAlgorithmParameter, Graph graph, MutationWeight mutationWeight)
     {
 
         // TODO: ADD objective when available
 
-      //  var fitnessFunction = new MultiObjectiveFitnessFunction();
+        //  var fitnessFunction = new MultiObjectiveFitnessFunction();
 
         // build genetic algorithm engine
         var geneticAlgorithmEngine = new GeneticAlgorithmEngineBuilder.Builder()
@@ -50,6 +50,7 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
             .Fitness(/*fitnessFunction*/null) // TODO: add multi objective fitness function
             .MutationWeight(mutationWeight)
             .CreatingEngineForMultiObjectiveProblem();
+
 
 
         // run the genetic algorithm
@@ -82,12 +83,30 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
         var fitnessFunction = new FitnessFunction(objectives, graph);
 
+        var generationRunEventHandler = new EventHandler((sender, e) =>
+        {
+            var ga = sender as GeneticAlgorithm;
+            var bestChromosome = ga.BestChromosome as LinearLinkageEncoding;
+            var testCohesionObjective = new CohesionObjective(graph, 1);
+            var cohesionValue = testCohesionObjective.CalculateValue(bestChromosome.GetModules());
+
+
+            var testCouplingObjective = new CouplingObjective(graph, 1);
+            var couplingValue = testCouplingObjective.CalculateValue(bestChromosome.GetModules());
+
+
+            Console.WriteLine($"Generation {ga.GenerationsNumber}: Best Fitness = {bestChromosome.Fitness}: Modules = {bestChromosome.GetModules().Count}");
+            Console.WriteLine($"Cohesion Value of the best solution: {cohesionValue}");
+            Console.WriteLine($"Coupling Value of the best solution: {couplingValue}");
+        });
+
         // build genetic algorithm engine
         var geneticAlgorithmEngine = new GeneticAlgorithmEngineBuilder.Builder()
             .Graph(graph)
             .GeneticAlgorithmParameter(geneticAlgorithmParameter)
             .MutationWeight(mutationWeight)
             .Fitness(fitnessFunction)
+            .GenerationMetricsHandler(generationRunEventHandler)
             .CreatingEngineForWeightedSumProblem();
 
         var taskExecutor = new ParallelTaskExecutor();
@@ -106,17 +125,6 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
         BestChromosome?.DisplayChromosome();
 
-        var testCohesionObjective = new CohesionObjective(graph, 1);
-        var cohesionValue = testCohesionObjective.CalculateValue(BestChromosome.GetModules());
-        Console.WriteLine($"Cohesion Value of the best solution: {cohesionValue}");
-
-        var testCouplingObjective = new CouplingObjective(graph, 1.5);
-        var couplingValue = testCouplingObjective.CalculateValue(BestChromosome.GetModules());
-        Console.WriteLine($"Coupling Value of the best solution: {couplingValue}");
-
-        var testModularityObjective = new ModularityObjective(graph, 1);
-        var modularityValue = testModularityObjective.CalculateValue(BestChromosome.GetModules());
-        Console.WriteLine($"Modularity Value of the best solution: {modularityValue}");
 
         var time = geneticAlgorithmEngine.TimeEvolving;
         Console.WriteLine($"Time taken: {time.TotalSeconds} seconds");

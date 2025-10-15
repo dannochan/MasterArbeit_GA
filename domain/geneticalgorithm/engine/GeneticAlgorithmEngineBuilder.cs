@@ -21,6 +21,8 @@ public class GeneticAlgorithmEngineBuilder
 
         private IFitness _fitness;
 
+        private EventHandler _generationMetricsHandler;
+
         public Builder Graph(Graph graph)
         {
             _graph = graph;
@@ -43,6 +45,12 @@ public class GeneticAlgorithmEngineBuilder
         public Builder Fitness(IFitness fitness)
         {
             _fitness = fitness;
+            return this;
+        }
+
+        public Builder GenerationMetricsHandler(EventHandler generationMetricsHandler)
+        {
+            _generationMetricsHandler = generationMetricsHandler;
             return this;
         }
 
@@ -79,7 +87,7 @@ public class GeneticAlgorithmEngineBuilder
             var crossover = CreateCrossover();
             var mutation = CreateMutatorn();
 
-            return new GeneticAlgorithm(
+            var geneticAlgorithmEngine = new GeneticAlgorithm(
                 population,
                 _fitness,
                 selector,
@@ -91,6 +99,9 @@ public class GeneticAlgorithmEngineBuilder
                 MutationProbability = geneticAlgorithmParameter.MutationRate,
                 //  Reinsertion = new GaElitistReinsertion(geneticAlgorithmParameter.ElitismCount)
             };
+
+            geneticAlgorithmEngine.GenerationRan += _generationMetricsHandler;
+            return geneticAlgorithmEngine;
         }
 
         private IMutation CreateMutatorn()
@@ -146,7 +157,7 @@ public class GeneticAlgorithmEngineBuilder
                 : Genotypeinitializer.GenerateGenotypeWithModulesForEachConnectedComponet(graph);
 
 
-            return new Population(10, 50, chromosome);
+            return new Population(5, 10, chromosome);
         }
     }
 }
