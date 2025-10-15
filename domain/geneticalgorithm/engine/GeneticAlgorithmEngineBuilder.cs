@@ -129,10 +129,11 @@ public class GeneticAlgorithmEngineBuilder
             Console.WriteLine($"Offspring Selection: {geneticAlgorithmParameter.OffspringSelection}");
             switch (geneticAlgorithmParameter.OffspringSelection)
             {
-                case "Roulette":
-                    return new RouletteWheelSelection();
-                default:
+                case "Tournament":
                     return new TournamentSelection(geneticAlgorithmParameter.TournamentSize, true);
+
+                default:
+                    return new RouletteWheelSelection();
             }
         }
 
@@ -145,7 +146,7 @@ public class GeneticAlgorithmEngineBuilder
                 : Genotypeinitializer.GenerateGenotypeWithModulesForEachConnectedComponet(graph);
 
 
-            return new Population(20, 100, chromosome);
+            return new Population(10, 50, chromosome);
         }
     }
 }
