@@ -3,7 +3,9 @@ using MA_GA.domain;
 using MA_GA.domain.geneticalgorithm.engine;
 using MA_GA.domain.geneticalgorithm.parameter;
 using MA_GA.domain.GreedyAlgorithm;
+using MA_GA.models.optimizationresult;
 using MA_GA.Models;
+using MA_GA.util;
 using Microsoft.Extensions.Logging;
 using QuikGraph;
 
@@ -32,9 +34,9 @@ class MainApp
             "GraftMutation",
             100, // Population size
             0.8f, // Crossover rate
-            0.5f, // Mutation rate
+            0.1f, // Mutation rate
             100, // Max generations
-            5, // Tournament size
+            2, // Tournament size
             0.5f, // Elitism count
             0.01, // Converged gene rate
             0.01, // Convergence rate
@@ -107,7 +109,7 @@ class MainApp
         }
 
         // Run the genetic algorithm engine
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 1; i++)
         {
             RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameter);
         }
@@ -146,6 +148,14 @@ class MainApp
         var optimizationResult = gaEngine.run(dataObjectCenter, geneticAlgorithmParameter);
         Console.WriteLine(optimizationResult.GeneticAlgorithmResults.DisplaySolutionUsingShortName());
         logger.LogInformation("Genetic algorithm engine run completed.");
+        // output results to CSV
+        var csvGenerator = new CsvGenerator();
+        string dir = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
+        string outputFilePath = Path.Combine(dir, "output", "GeneticAlgorithmResults.csv");
+        logger.LogInformation("Generating CSV output.");
+        csvGenerator.GenerateCsvAsync(new List<GeneticAlgorithmExecutionResult> { optimizationResult }, outputFilePath).Wait();
+        logger.LogInformation("CSV output generated successfully.");
+
     }
 
     private static void CreateClusteredGraphAndDisplay(AdjacencyGraph<DataObject, IObjectRelation> partitionResult)
