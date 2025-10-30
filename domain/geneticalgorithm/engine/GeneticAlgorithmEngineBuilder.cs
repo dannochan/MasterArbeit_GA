@@ -157,7 +157,7 @@ public class GeneticAlgorithmEngineBuilder
                 : Genotypeinitializer.GenerateGenotypeWithModulesForEachConnectedComponet(graph);
 
 
-            return new Population(10, 10, chromosome);
+            return new Population(geneticAlgorithmParameter.PopulationSize, geneticAlgorithmParameter.PopulationSize, chromosome);
         }
     }
 }

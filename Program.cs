@@ -32,10 +32,10 @@ class MainApp
             "ElitismSelection",
             "GroupCrossover",
             "GraftMutation",
-            100, // Population size
+            10, // Population size
             0.8f, // Crossover rate
             0.1f, // Mutation rate
-            100, // Max generations
+            50, // Max generations
             2, // Tournament size
             0.5f, // Elitism count
             0.01, // Converged gene rate
