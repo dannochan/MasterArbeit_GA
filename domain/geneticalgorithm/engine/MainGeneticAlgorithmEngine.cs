@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using GeneticSharp;
 using MA_GA.domain.geneticalgorithm.encoding;
 using MA_GA.domain.geneticalgorithm.fitnessfunction;
@@ -14,7 +15,6 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 {
 
     private static readonly float RANDOM_GENERTATED_SEED = 12345f;
-
 
     public GeneticAlgorithmExecutionResult run(Graph graph, GeneticAlgorithmParameter geneticAlgorithmParameter, MutationWeight? mutationWeight = null)
     {
@@ -72,7 +72,6 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
     private GeneticAlgorithmExecutionResult ModularisewithWeightedSumFitnessFunction(GeneticAlgorithmParameter geneticAlgorithmParameter, Graph graph, MutationWeight? mutationWeight)
     {
 
-        // TODO: move to genetic parameter settings
         var objectives = new List<Objective>
         {
                 new CohesionObjective(graph, 1),
@@ -83,21 +82,22 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
         var fitnessFunction = new FitnessFunction(objectives, graph);
 
-        var generationRunEventHandler = new EventHandler((sender, e) =>
+        // string builder to store generation result
+        var generationResultStringBuilder = new StringBuilder();
+        // event handler for generation run and metrics collection
+        var generationRunEventHandler = new EventHandler((sender, args) =>
         {
             var ga = sender as GeneticAlgorithm;
+            var el = generationResultStringBuilder;
             var bestChromosome = ga.BestChromosome as LinearLinkageEncoding;
             var testCohesionObjective = new CohesionObjective(graph, 1);
             var cohesionValue = testCohesionObjective.CalculateValue(bestChromosome.GetModules());
 
-
             var testCouplingObjective = new CouplingObjective(graph, 1);
             var couplingValue = testCouplingObjective.CalculateValue(bestChromosome.GetModules());
 
+            el.Append($"{ga.GenerationsNumber}-{bestChromosome.Fitness}-{bestChromosome.GetModules().Count}-{cohesionValue}-{couplingValue}!");
 
-            Console.WriteLine($"Generation {ga.GenerationsNumber}: Best Fitness = {bestChromosome.Fitness}: Modules = {bestChromosome.GetModules().Count}");
-            Console.WriteLine($"Cohesion Value of the best solution: {cohesionValue}");
-            Console.WriteLine($"Coupling Value of the best solution: {couplingValue}");
         });
 
         // build genetic algorithm engine
@@ -129,8 +129,6 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
         var time = geneticAlgorithmEngine.TimeEvolving;
         Console.WriteLine($"Time taken: {time.TotalSeconds} seconds");
 
-
-        // testing result class
         var geneticAlgorithmResults = new GeneticAlgorithmResults
         {
             graph = graph,
@@ -140,11 +138,12 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
             BestFitness = geneticAlgorithmEngine.BestChromosome.Fitness.Value
         };
 
-        // Display the results
 
         return new GeneticAlgorithmExecutionResult()
         {
-            GeneticAlgorithmResults = geneticAlgorithmResults
+            GeneticAlgorithmParameter = geneticAlgorithmParameter,
+            GeneticAlgorithmResults = geneticAlgorithmResults,
+            GenerationResultString = generationResultStringBuilder.ToString()
         };
     }
 
