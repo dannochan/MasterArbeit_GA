@@ -97,7 +97,17 @@ public class CsvGenerator
     {
         public RuntimeResultMap()
         {
-            Map(m => m.GeneticAlgorithmResults.BestFitness).Index(0).Name("BestFitness");
+            Map(m => m.GeneticAlgorithmParameter.PopulationSize).Index(0).Name("PopulationSize");
+            Map(m => m.GeneticAlgorithmParameter.CrossoverRate).Index(1).Name("CrossoverRate");
+            Map(m => m.GeneticAlgorithmParameter.MutationRate).Index(2).Name("MutationRate");
+            Map(m => m.GeneticAlgorithmParameter.TournamentSize).Index(3).Name("SelectionPressure");
+            Map(m => m.GeneticAlgorithmParameter.MaxGenerations).Index(4).Name("MaxGenerations");
+            Map(m => m.GeneticAlgorithmResults.BestFitness).Index(5).Name("BestFitness");
+            Map(m => m.GeneticAlgorithmResults.ModularisationExcecutionTimeInMillisecond).Index(6).Name("ExecutionTimeMs");
+            Map(m => m.GeneticAlgorithmResults.ModulesFromBestSolution.Count).Index(7).Name("ComponentCount");
+            Map(m => m.GeneticAlgorithmResults.MaxModuleSize).Index(8).Name("MaxComponentCount");
+            Map(m => m.GeneticAlgorithmResults.MinModuleSize).Index(9).Name("MinComponentCount");
+            Map(m => m.GenerationResultString).Index(10).Name("GenerationResults");
 
 
         }
