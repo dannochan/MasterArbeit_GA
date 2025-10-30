@@ -109,12 +109,24 @@ class MainApp
         }
 
         // Run the genetic algorithm engine
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 5; i++)
         {
-            RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameter);
+            var optimizationResult = RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameter);
+            ExportOptimizationResultToCsv(logger, optimizationResult);
         }
 
 
+    }
+
+    private static void ExportOptimizationResultToCsv(ILogger logger, GeneticAlgorithmExecutionResult optimizationResult)
+    {
+        // output results to CSV
+        var csvGenerator = new CsvGenerator();
+        string dir = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
+        string outputFilePath = Path.Combine(dir, "output", "GeneticAlgorithmResults.csv");
+        logger.LogInformation("Generating CSV output.");
+        csvGenerator.AppendToCsvAsync(optimizationResult, outputFilePath).Wait();
+        logger.LogInformation("CSV output generated successfully.");
     }
 
     private static void ProcessGraphPartitioning(ILogger logger, AdjacencyGraph<DataObject, IObjectRelation> graph)
@@ -140,7 +152,7 @@ class MainApp
         }
     }
 
-    private static void RunGAEngine(ILogger logger, Graph dataObjectCenter, GeneticAlgorithmParameter geneticAlgorithmParameter)
+    private static GeneticAlgorithmExecutionResult RunGAEngine(ILogger logger, Graph dataObjectCenter, GeneticAlgorithmParameter geneticAlgorithmParameter)
     {
 
         var gaEngine = new MainGeneticAlgorithmEngine();
@@ -148,13 +160,8 @@ class MainApp
         var optimizationResult = gaEngine.run(dataObjectCenter, geneticAlgorithmParameter);
         Console.WriteLine(optimizationResult.GeneticAlgorithmResults.DisplaySolutionUsingShortName());
         logger.LogInformation("Genetic algorithm engine run completed.");
-        // output results to CSV
-        var csvGenerator = new CsvGenerator();
-        string dir = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
-        string outputFilePath = Path.Combine(dir, "output", "GeneticAlgorithmResults.csv");
-        logger.LogInformation("Generating CSV output.");
-        csvGenerator.GenerateCsvAsync(new List<GeneticAlgorithmExecutionResult> { optimizationResult }, outputFilePath).Wait();
-        logger.LogInformation("CSV output generated successfully.");
+
+        return optimizationResult;
 
     }
 
