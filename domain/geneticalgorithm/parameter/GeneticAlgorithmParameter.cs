@@ -69,6 +69,10 @@ public class GeneticAlgorithmParameter
         UseGreedyPartition = useGreedyPartition; // Default value, can be set to false if needed
     }
 
+    public GeneticAlgorithmParameter()
+    {
+    }
+
     public override string ToString()
     {
         return $"GeneticAlgorithmParameter: " +

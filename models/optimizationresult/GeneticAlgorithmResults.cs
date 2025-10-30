@@ -16,6 +16,30 @@ public class GeneticAlgorithmResults
 
     public double BestFitness { get; set; }
 
+    public int MaxModuleSize
+    {
+        get
+        {
+            if (ModulesFromBestSolution == null || ModulesFromBestSolution.Count == 0)
+            {
+                return 0;
+            }
+            return ModulesFromBestSolution.Max(m => m.GetIndices().Count);
+        }
+    }
+
+    public int MinModuleSize
+    {
+        get
+        {
+            if (ModulesFromBestSolution == null || ModulesFromBestSolution.Count == 0)
+            {
+                return 0;
+            }
+            return ModulesFromBestSolution.Min(m => m.GetIndices().Count);
+        }
+    }
+
     public GeneticAlgorithmResults()
     {
         ModulesFromBestSolution = new List<Module>();
