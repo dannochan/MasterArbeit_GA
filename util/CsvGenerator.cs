@@ -109,7 +109,6 @@ public class CsvGenerator
             Map(m => m.GeneticAlgorithmResults.MinModuleSize).Index(9).Name("MinComponentCount");
             Map(m => m.GenerationResultString).Index(10).Name("GenerationResults");
 
-
         }
     }
 

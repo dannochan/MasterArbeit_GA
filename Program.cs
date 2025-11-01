@@ -25,6 +25,8 @@ class MainApp
         string filePath = Path.Combine(dir, "data", "SmallTestcase.json");
         string filePath2 = Path.Combine(dir, "data", "BigTestcase-2.json");
 
+        var isBusy = false;
+
         // define genetic algorithm parameters create ga parameter for engine
         var geneticAlgorithmParameter = new GeneticAlgorithmParameter(
             "Interger",
@@ -65,6 +67,17 @@ class MainApp
         {
 
         };
+
+
+        var mutationRateArry = new float[] { 0.1f, 0.4f, 0.8f };
+        var crossoverRateArry = new float[] { 0.1f, 0.5f, 1f };
+        var populationSizeArry = new int[] { 20, 100, 200 };
+        var maxGenerationArry = new int[] { 50, 100, 200 };
+        var selectionPressureArry = new int[] { 2, 7, 20 };
+
+        var geneticAlgorithmParameterCombinations = GenerateGAParameterCombinations(mutationRateArry, crossoverRateArry, populationSizeArry, maxGenerationArry, selectionPressureArry);
+
+
         // object to hold the data
         Graph dataObjectCenter = new Graph(dataObjectRelationWeight);
 
@@ -108,12 +121,62 @@ class MainApp
             ProcessGraphPartitioning(logger, graph);
         }
 
-        // Run the genetic algorithm engine
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < geneticAlgorithmParameterCombinations.Count(); i++)
         {
-            var optimizationResult = RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameter);
-            ExportOptimizationResultToCsv(logger, optimizationResult);
+            // geneticAlgorithmParameter.MutationRate = mutationRateArry[i];
+            // run multiple times to observe the effect of mutation rate on optimization result and 
+            // parameter configuration replication
+            if (!isBusy)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    isBusy = true;
+                    GeneticAlgorithmExecutionResult optimizationResult;
+                    lock (dataObjectCenter)
+                    {
+                        optimizationResult = RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameter);
+                    }
+                    ExportOptimizationResultToCsv(logger, optimizationResult);
+                    isBusy = false;
+                }
+
+
+            }
+
         }
+
+
+    }
+
+    public static IEnumerable<GeneticAlgorithmParameter> GenerateGAParameterCombinations(float[] mutationRateArry, float[] crossoverRateArry, int[] populationSizeArry, int[] maxGenerationArry, int[] selectionPressureArry)
+    {
+
+
+        return from mutationRate in mutationRateArry
+               from crossoverRate in crossoverRateArry
+               from populationSize in populationSizeArry
+               from maxGeneration in maxGenerationArry
+               from selectionPressure in selectionPressureArry
+               select new GeneticAlgorithmParameter(
+                   "Interger",
+                   "Tournament",
+                   "ElitismSelection",
+                   "GroupCrossover",
+                   "GraftMutation",
+                   populationSize,
+                   (float)crossoverRate,
+                   (float)mutationRate,
+                   maxGeneration,
+                   (int)selectionPressure,
+                   0.5f,
+                   0.01f,
+                   0.01f,
+                   0,
+                   10,
+                   100,
+                   true,
+                   true
+               );
 
 
     }
