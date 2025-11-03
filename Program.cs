@@ -68,15 +68,7 @@ class MainApp
 
         };
 
-
-        var mutationRateArry = new float[] { 0.1f, 0.4f, 0.8f };
-        var crossoverRateArry = new float[] { 0.1f, 0.5f, 1f };
-        var populationSizeArry = new int[] { 20, 100, 200 };
-        var maxGenerationArry = new int[] { 50, 100, 200 };
-        var selectionPressureArry = new int[] { 2, 7, 20 };
-
-        var geneticAlgorithmParameterCombinations = GenerateGAParameterCombinations(mutationRateArry, crossoverRateArry, populationSizeArry, maxGenerationArry, selectionPressureArry);
-
+        var geneticAlgorithmParameterCombinations = GenerateGAParameterCombinations();
 
         // object to hold the data
         Graph dataObjectCenter = new Graph(dataObjectRelationWeight);
@@ -98,7 +90,7 @@ class MainApp
             {
                 ObjectHelper.MapDataObjects(rawObject, dataObjectCenter, logger);
             }
-            //      Console.WriteLine(GraphService.GenerateGraphToDOT(dataObjectCenter.GetGraph()));
+
         }
 
         if (dataObjectCenter.IsEmpty())
@@ -123,7 +115,6 @@ class MainApp
 
         for (int i = 0; i < geneticAlgorithmParameterCombinations.Count(); i++)
         {
-            // geneticAlgorithmParameter.MutationRate = mutationRateArry[i];
             // run multiple times to observe the effect of mutation rate on optimization result and 
             // parameter configuration replication
             if (!isBusy)
@@ -134,7 +125,7 @@ class MainApp
                     GeneticAlgorithmExecutionResult optimizationResult;
                     lock (dataObjectCenter)
                     {
-                        optimizationResult = RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameter);
+                        optimizationResult = RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameterCombinations.ElementAt(i));
                     }
                     ExportOptimizationResultToCsv(logger, optimizationResult);
                     isBusy = false;
@@ -148,38 +139,84 @@ class MainApp
 
     }
 
-    public static IEnumerable<GeneticAlgorithmParameter> GenerateGAParameterCombinations(float[] mutationRateArry, float[] crossoverRateArry, int[] populationSizeArry, int[] maxGenerationArry, int[] selectionPressureArry)
+    public static IEnumerable<GeneticAlgorithmParameter> GenerateGAParameterCombinations()
     {
 
-
-        return from mutationRate in mutationRateArry
-               from crossoverRate in crossoverRateArry
-               from populationSize in populationSizeArry
-               from maxGeneration in maxGenerationArry
-               from selectionPressure in selectionPressureArry
-               select new GeneticAlgorithmParameter(
-                   "Interger",
-                   "Tournament",
-                   "ElitismSelection",
-                   "GroupCrossover",
-                   "GraftMutation",
-                   populationSize,
-                   (float)crossoverRate,
-                   (float)mutationRate,
-                   maxGeneration,
-                   (int)selectionPressure,
-                   0.5f,
-                   0.01f,
-                   0.01f,
-                   0,
-                   10,
-                   100,
-                   true,
-                   true
-               );
+        return GetL27Design().Select(param => new GeneticAlgorithmParameter(
+            "Interger",
+            "Tournament",
+            "ElitismSelection",
+            "GroupCrossover",
+            "GraftMutation",
+            param.PopulationSize,
+            param.CrossoverRate,
+            param.MutationRate,
+            param.MaxGenerations,
+            param.TournamentSize,
+            0.5f, // Elitism count
+            0.01, // Converged gene rate
+            0.01, // Convergence rate
+            0, // Count generation
+            10, // Minimum Pareto set size
+            100, // Maximum Pareto set size
+            true, // Set to true to use weighted sum method
+            true // Set to true to use greedy partition
+        ));
 
 
     }
+
+
+    /*
+            var mutationRateArry = new float[] { 0.1f, 0.4f, 0.8f };
+            var crossoverRateArry = new float[] { 0.1f, 0.5f, 1f };
+            var populationSizeArry = new int[] { 20, 100, 200 };
+            var maxGenerationArry = new int[] { 50, 100, 200 };
+            var selectionPressureArry = new int[] { 2, 7, 20 };
+    */
+
+    public static List<GeneticAlgorithmParameter> GetL27Design()
+    {
+        return new List<GeneticAlgorithmParameter>
+    {
+        new() { CrossoverRate = 0.1f, MutationRate = 0.1f, PopulationSize = 20, TournamentSize = 2,  MaxGenerations = 50 },
+        new() { CrossoverRate = 0.1f, MutationRate = 0.1f, PopulationSize = 100, TournamentSize = 7,  MaxGenerations = 250 },
+        new() { CrossoverRate = 0.1f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 600 },
+
+        new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 20, TournamentSize = 2,  MaxGenerations = 250 },
+        new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 100, TournamentSize = 7,  MaxGenerations = 600 },
+        new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 50 },
+
+        new() { CrossoverRate = 0.1f, MutationRate = 0.8f, PopulationSize = 20, TournamentSize = 7,  MaxGenerations = 50 },
+        new() { CrossoverRate = 0.1f, MutationRate = 0.8f, PopulationSize = 100, TournamentSize = 20, MaxGenerations = 250 },
+        new() { CrossoverRate = 0.1f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 600 },
+
+        new() { CrossoverRate = 0.5f, MutationRate = 0.1f, PopulationSize = 20, TournamentSize = 20, MaxGenerations = 600 },
+        new() { CrossoverRate = 0.5f, MutationRate = 0.1f, PopulationSize = 100, TournamentSize = 2,  MaxGenerations = 50 },
+        new() { CrossoverRate = 0.5f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 250 },
+
+        new() { CrossoverRate = 0.5f, MutationRate = 0.4f, PopulationSize = 20, TournamentSize = 7,  MaxGenerations = 600 },
+        new() { CrossoverRate = 0.5f, MutationRate = 0.4f, PopulationSize = 100, TournamentSize = 20, MaxGenerations = 50 },
+        new() { CrossoverRate = 0.5f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 250 },
+
+        new() { CrossoverRate = 0.5f, MutationRate = 0.8f, PopulationSize = 20, TournamentSize = 20, MaxGenerations = 250 },
+        new() { CrossoverRate = 0.5f, MutationRate = 0.8f, PopulationSize = 100, TournamentSize = 2,  MaxGenerations = 600 },
+        new() { CrossoverRate = 0.5f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 50 },
+
+        new() { CrossoverRate = 1f, MutationRate = 0.1f, PopulationSize = 20, TournamentSize = 7,  MaxGenerations = 250 },
+        new() { CrossoverRate = 1f, MutationRate = 0.1f, PopulationSize = 100, TournamentSize = 20, MaxGenerations = 600 },
+        new() { CrossoverRate = 1f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 50 },
+
+        new() { CrossoverRate = 1f, MutationRate = 0.4f, PopulationSize = 20, TournamentSize = 20, MaxGenerations = 50 },
+        new() { CrossoverRate = 1f, MutationRate = 0.4f, PopulationSize = 100, TournamentSize = 2,  MaxGenerations = 250 },
+        new() { CrossoverRate = 1f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 600 },
+
+        new() { CrossoverRate = 1f, MutationRate = 0.8f, PopulationSize = 20, TournamentSize = 2,  MaxGenerations = 600 },
+        new() { CrossoverRate = 1f, MutationRate = 0.8f, PopulationSize = 100, TournamentSize = 7,  MaxGenerations = 50 },
+        new() { CrossoverRate = 1f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 250 },
+    };
+    }
+
 
     private static void ExportOptimizationResultToCsv(ILogger logger, GeneticAlgorithmExecutionResult optimizationResult)
     {
