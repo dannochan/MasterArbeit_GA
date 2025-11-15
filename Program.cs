@@ -14,7 +14,7 @@ using QuikGraph;
 class MainApp
 {
 
-            private static readonly object csvWriteLock = new object();
+    private static readonly object csvWriteLock = new object();
     static void Main(string[] args)
     {
         // logger
@@ -91,7 +91,7 @@ class MainApp
         if (rawObject != null)
         {
 
-                ObjectHelper.MapDataObjects(rawObject, dataObjectCenter, logger);
+            ObjectHelper.MapDataObjects(rawObject, dataObjectCenter, logger);
 
         }
 
@@ -121,22 +121,22 @@ class MainApp
 
 
             var paramConfig = geneticAlgorithmParameterCombinations.ElementAt(i);
-    
-    // Run 10 replications in parallel
-    Parallel.For(0, 10, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, j =>
-    {
-        // Each thread gets its own seed
-        int seed = (i * 100000) + (j * 1000) + Thread.CurrentThread.ManagedThreadId;
-        BasicRandomization.ResetSeed(seed);
-        
-        var optimizationResult = RunGAEngine(logger, dataObjectCenter, paramConfig);
-        
-        // CSV writing needs synchronization!
-        lock (csvWriteLock)
-        {
-            ExportOptimizationResultToCsv(logger, optimizationResult);
-        }
-    });
+
+            // Run 10 replications in parallel
+            Parallel.For(0, 10, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, j =>
+            {
+                // Each thread gets its own seed
+                int seed = (i * 100000) + (j * 1000) + Thread.CurrentThread.ManagedThreadId;
+                BasicRandomization.ResetSeed(seed);
+
+                var optimizationResult = RunGAEngine(logger, dataObjectCenter, paramConfig);
+
+                // CSV writing needs synchronization!
+                lock (csvWriteLock)
+                {
+                    ExportOptimizationResultToCsv(logger, optimizationResult);
+                }
+            });
 
         }
 
@@ -242,12 +242,21 @@ class MainApp
         // output results to CSV
         var csvGenerator = new CsvGenerator();
         string dir = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
-        string outputFilePath = Path.Combine(dir, "output", "GeneticAlgorithmResults.csv");
-        logger.LogInformation("Generating CSV output.");
-        lock (csvWriteLock){
+        string outputDirectory = Path.Combine(dir, "output");
+        string outputFilePath = Path.Combine(outputDirectory, "GeneticAlgorithmResults.csv");
 
-        csvGenerator.AppendToCsvAsync(optimizationResult, outputFilePath).Wait();
-            
+        logger.LogInformation("Generating CSV output.");
+        lock (csvWriteLock)
+        {
+            // Create directory inside the lock to avoid race condition
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+
+            csvGenerator.AppendToCsvAsync(optimizationResult, outputFilePath).Wait();
+
         }
         logger.LogInformation("CSV output generated successfully.");
     }
