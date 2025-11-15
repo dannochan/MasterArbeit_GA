@@ -104,7 +104,6 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
             //           $"{ga.GenerationsNumber}-{best.Fitness}-{modules.Count}-{cohesionValue}-{couplingValue}!"
             //       );
 
-            Console.WriteLine($"Gen {ga.GenerationsNumber}: Best Fitness = {ga.BestChromosome.Fitness}");
             bestFitnessValues.Add(ga.BestChromosome.Fitness.Value);
 
         });

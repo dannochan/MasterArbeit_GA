@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using GeneticSharp;
 using MA_GA.domain;
 using MA_GA.domain.geneticalgorithm.engine;
 using MA_GA.domain.geneticalgorithm.parameter;
@@ -12,6 +13,8 @@ using QuikGraph;
 
 class MainApp
 {
+
+            private static readonly object csvWriteLock = new object();
     static void Main(string[] args)
     {
         // logger
@@ -70,6 +73,7 @@ class MainApp
 
         var geneticAlgorithmParameterCombinations = GenerateGAParameterCombinations();
 
+
         // object to hold the data
         Graph dataObjectCenter = new Graph(dataObjectRelationWeight);
 
@@ -86,10 +90,8 @@ class MainApp
 
         if (rawObject != null)
         {
-            lock (dataObjectCenter)
-            {
+
                 ObjectHelper.MapDataObjects(rawObject, dataObjectCenter, logger);
-            }
 
         }
 
@@ -116,24 +118,25 @@ class MainApp
 
         for (int i = 0; i < geneticAlgorithmParameterCombinations.Count(); i++)
         {
-            // run multiple times to observe the effect of mutation rate on optimization result and 
-            // parameter configuration replication
-            if (!isBusy)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    isBusy = true;
-                    GeneticAlgorithmExecutionResult optimizationResult;
-                    lock (dataObjectCenter)
-                    {
-                        optimizationResult = RunGAEngine(logger, dataObjectCenter, geneticAlgorithmParameterCombinations.ElementAt(i));
-                    }
-                    ExportOptimizationResultToCsv(logger, optimizationResult);
-                    isBusy = false;
-                }
 
 
-            }
+            var paramConfig = geneticAlgorithmParameterCombinations.ElementAt(i);
+    
+    // Run 10 replications in parallel
+    Parallel.For(0, 10, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, j =>
+    {
+        // Each thread gets its own seed
+        int seed = (i * 100000) + (j * 1000) + Thread.CurrentThread.ManagedThreadId;
+        BasicRandomization.ResetSeed(seed);
+        
+        var optimizationResult = RunGAEngine(logger, dataObjectCenter, paramConfig);
+        
+        // CSV writing needs synchronization!
+        lock (csvWriteLock)
+        {
+            ExportOptimizationResultToCsv(logger, optimizationResult);
+        }
+    });
 
         }
 
@@ -241,7 +244,11 @@ class MainApp
         string dir = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
         string outputFilePath = Path.Combine(dir, "output", "GeneticAlgorithmResults.csv");
         logger.LogInformation("Generating CSV output.");
+        lock (csvWriteLock){
+
         csvGenerator.AppendToCsvAsync(optimizationResult, outputFilePath).Wait();
+            
+        }
         logger.LogInformation("CSV output generated successfully.");
     }
 
