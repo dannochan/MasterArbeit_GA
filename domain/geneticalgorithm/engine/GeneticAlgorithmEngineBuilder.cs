@@ -9,6 +9,8 @@ using MA_GA.domain.geneticalgorithm.mutation;
 using MA_GA.domain.reinsertion;
 
 
+
+
 namespace MA_GA.domain.geneticalgorithm.engine;
 
 public class GeneticAlgorithmEngineBuilder
@@ -87,6 +89,7 @@ public class GeneticAlgorithmEngineBuilder
             var crossover = CreateCrossover();
             var mutation = CreateMutatorn();
 
+
             var geneticAlgorithmEngine = new GeneticAlgorithm(
                 population,
                 _fitness,
@@ -97,7 +100,7 @@ public class GeneticAlgorithmEngineBuilder
                 Termination = new GenerationNumberTermination(geneticAlgorithmParameter.MaxGenerations),
                 CrossoverProbability = geneticAlgorithmParameter.CrossoverRate,
                 MutationProbability = geneticAlgorithmParameter.MutationRate,
-                //  Reinsertion = new GaElitistReinsertion(geneticAlgorithmParameter.ElitismCount)
+                  Reinsertion = new GaElitistReinsertion(geneticAlgorithmParameter.ElitismCount)
             };
 
             geneticAlgorithmEngine.GenerationRan += _generationMetricsHandler;

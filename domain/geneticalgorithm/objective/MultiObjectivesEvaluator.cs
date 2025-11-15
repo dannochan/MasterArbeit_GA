@@ -23,52 +23,42 @@ public class MultiObjectivesEvaluator
     }
 
     // TODO: CHECK IF OBJECTIVES WEIGHT should be considreed in the evaluation
-    public double[] EvaluateAll(IChromosome chromosome)
-    {
-        var lle = chromosome as LinearLinkageEncoding;
-        lock (lle)
+   public double[] EvaluateAll(IChromosome chromosome)
+{
+    // Create local copy / representation once
+    var lle = new LinearLinkageEncoding(chromosome, _graph); // cheap constructor? profile it
+    if (LinearLinkageEncodingInformationService.IsOneModuleConsistOfOneEdge(lle) ||
+        LinearLinkageEncodingInformationService.IsModuleWithOnlyInformationObjects(lle))
         {
-
-            if (LinearLinkageEncodingInformationService.IsOneModuleConsistOfOneEdge(lle))
-            {
-                // return lower fitness for invalid solution
-                lle = LinearLinkageEncodingOperator.FixLinearLinkageEncoding(lle);
-            }
-
-            if (LinearLinkageEncodingInformationService.IsModuleWithOnlyInformationObjects(lle))
-            {
-                // return lower fitness for invalid solution
-                lle = LinearLinkageEncodingOperator.FixLinearLinkageEncoding(lle);
-            }
-
-        }
-        var _sumObjectiveWeights = _objectives.Sum(o => o.GetWeight());
-        return _objectives.Select(obj =>
-        {
-            var weight = obj.GetWeight() / _sumObjectiveWeights;
-            var objectiveValue = obj.Evaluate(lle);
-
-            var weightedValue = weight * objectiveValue;
-            // TODO: how to deal with type of objectives, see paper of ali p49
-
-            if (obj.GetOptimizationType() == OptimizationType.Minimum)
-            {
-                return weightedValue *= -1;
-            }
-            if (LinearLinkageEncodingInformationService.IsMonolith(lle))
-            {
-                // return lower fitness for monolith solution
-                return weightedValue *= weightedValue > 0 ? 0.5 : 2;
-            }
-
-            if (LinearLinkageEncodingInformationService.IsModuleWithOnlyInformationObjects(lle))
-            {
-                // return lower fitness for monolith solution
-                return weightedValue *= weightedValue > 0 ? 0.5 : 2;
-            }
-            return weightedValue;
-        }).ToArray();
+            // Prefer penalize 
+            return [0.0d, 0.0d];
+       
     }
+
+    var modules = lle.GetModules().ToList(); // compute once
+
+    // maybe build index -> vertex map and pass along via graph or parameter
+
+    var sumWeights = _objectives.Sum(o => o.GetWeight());
+    var results = new double[_objectives.Count];
+
+    for (int i = 0; i < _objectives.Count; i++)
+    {
+        var obj = _objectives[i];
+        var value = obj.CalculateValue(modules);
+        var weight = obj.GetWeight() / sumWeights;
+        var weighted = weight * value;
+        if (obj.GetOptimizationType() == OptimizationType.Minimum)
+        {
+            weighted = -weighted;
+        }
+        // other penalties (monolith, only-IO) apply here based on lle
+        results[i] = weighted;
+    }
+
+    return results;
+}
+
 
 
     public int ObjectiveCount => _objectives.Count;

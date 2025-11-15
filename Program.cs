@@ -103,6 +103,7 @@ class MainApp
         var graph = dataObjectCenter.GetGraph();
         if (graph == null)
         {
+            
             logger.LogError("Graph is null after creation.");
             throw new InvalidOperationException("Graph is null, cannot proceed with graph processing.");
         }
@@ -153,7 +154,7 @@ class MainApp
             param.MutationRate,
             param.MaxGenerations,
             param.TournamentSize,
-            0.5f, // Elitism count
+            0.1f, // Elitism count
             0.01, // Converged gene rate
             0.01, // Convergence rate
             0, // Count generation
@@ -178,41 +179,56 @@ class MainApp
     public static List<GeneticAlgorithmParameter> GetL27Design()
     {
         return new List<GeneticAlgorithmParameter>
-    {
+        {
         new() { CrossoverRate = 0.1f, MutationRate = 0.1f, PopulationSize = 20, TournamentSize = 2,  MaxGenerations = 50 },
         new() { CrossoverRate = 0.1f, MutationRate = 0.1f, PopulationSize = 100, TournamentSize = 7,  MaxGenerations = 250 },
-        new() { CrossoverRate = 0.1f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 600 },
-
-        new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 20, TournamentSize = 2,  MaxGenerations = 250 },
+             new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 20, TournamentSize = 2,  MaxGenerations = 250 },
         new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 100, TournamentSize = 7,  MaxGenerations = 600 },
-        new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 50 },
 
         new() { CrossoverRate = 0.1f, MutationRate = 0.8f, PopulationSize = 20, TournamentSize = 7,  MaxGenerations = 50 },
         new() { CrossoverRate = 0.1f, MutationRate = 0.8f, PopulationSize = 100, TournamentSize = 20, MaxGenerations = 250 },
-        new() { CrossoverRate = 0.1f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 600 },
 
         new() { CrossoverRate = 0.5f, MutationRate = 0.1f, PopulationSize = 20, TournamentSize = 20, MaxGenerations = 600 },
         new() { CrossoverRate = 0.5f, MutationRate = 0.1f, PopulationSize = 100, TournamentSize = 2,  MaxGenerations = 50 },
-        new() { CrossoverRate = 0.5f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 250 },
 
         new() { CrossoverRate = 0.5f, MutationRate = 0.4f, PopulationSize = 20, TournamentSize = 7,  MaxGenerations = 600 },
         new() { CrossoverRate = 0.5f, MutationRate = 0.4f, PopulationSize = 100, TournamentSize = 20, MaxGenerations = 50 },
-        new() { CrossoverRate = 0.5f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 250 },
 
         new() { CrossoverRate = 0.5f, MutationRate = 0.8f, PopulationSize = 20, TournamentSize = 20, MaxGenerations = 250 },
         new() { CrossoverRate = 0.5f, MutationRate = 0.8f, PopulationSize = 100, TournamentSize = 2,  MaxGenerations = 600 },
-        new() { CrossoverRate = 0.5f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 50 },
 
         new() { CrossoverRate = 1f, MutationRate = 0.1f, PopulationSize = 20, TournamentSize = 7,  MaxGenerations = 250 },
         new() { CrossoverRate = 1f, MutationRate = 0.1f, PopulationSize = 100, TournamentSize = 20, MaxGenerations = 600 },
-        new() { CrossoverRate = 1f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 50 },
 
         new() { CrossoverRate = 1f, MutationRate = 0.4f, PopulationSize = 20, TournamentSize = 20, MaxGenerations = 50 },
         new() { CrossoverRate = 1f, MutationRate = 0.4f, PopulationSize = 100, TournamentSize = 2,  MaxGenerations = 250 },
-        new() { CrossoverRate = 1f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 600 },
 
         new() { CrossoverRate = 1f, MutationRate = 0.8f, PopulationSize = 20, TournamentSize = 2,  MaxGenerations = 600 },
         new() { CrossoverRate = 1f, MutationRate = 0.8f, PopulationSize = 100, TournamentSize = 7,  MaxGenerations = 50 },
+
+        new() { CrossoverRate = 0.1f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 600 },
+
+
+        new() { CrossoverRate = 0.1f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 50 },
+
+        new() { CrossoverRate = 0.1f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 600 },
+
+
+        new() { CrossoverRate = 0.5f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 250 },
+
+
+        new() { CrossoverRate = 0.5f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 250 },
+
+
+        new() { CrossoverRate = 0.5f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 50 },
+
+
+        new() { CrossoverRate = 1f, MutationRate = 0.1f, PopulationSize = 200, TournamentSize = 2,  MaxGenerations = 50 },
+
+
+        new() { CrossoverRate = 1f, MutationRate = 0.4f, PopulationSize = 200, TournamentSize = 7,  MaxGenerations = 600 },
+
+
         new() { CrossoverRate = 1f, MutationRate = 0.8f, PopulationSize = 200, TournamentSize = 20, MaxGenerations = 250 },
     };
     }

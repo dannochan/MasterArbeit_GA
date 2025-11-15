@@ -18,7 +18,7 @@ public class GaElitistReinsertion : ReinsertionBase
     {
 
         var diff = (int)(population.MaxSize * SelectionRate);
-        Console.WriteLine($"Performing elitist reinsertion with selection rate: {SelectionRate}, diff: {diff}");
+      //  Console.WriteLine($"Performing elitist reinsertion with selection rate: {SelectionRate}, diff: {diff}");
         if (diff > 0)
         {
             var bestParents = parents.OrderByDescending(p => p.Fitness).Take(diff).ToList();

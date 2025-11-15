@@ -72,10 +72,14 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
     private GeneticAlgorithmExecutionResult ModularisewithWeightedSumFitnessFunction(GeneticAlgorithmParameter geneticAlgorithmParameter, Graph graph, MutationWeight? mutationWeight)
     {
 
+        var testCohesionObjective = new CohesionObjective(graph, 1);
+        
+            var testCouplingObjective = new CouplingObjective(graph, 1);
+
         var objectives = new List<Objective>
         {
-                new CohesionObjective(graph, 1),
-                new CouplingObjective(graph, 1),
+                testCohesionObjective,
+                testCouplingObjective
                 //optional 
           //      new ModularityObjective(graph, 1),
         };
@@ -87,18 +91,19 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
         // event handler for generation run and metrics collection
         var generationRunEventHandler = new EventHandler((sender, args) =>
         {
-            var ga = sender as GeneticAlgorithm;
-            var el = generationResultStringBuilder;
-            var bestChromosome = ga.BestChromosome as LinearLinkageEncoding;
-            var testCohesionObjective = new CohesionObjective(graph, 1);
-            var cohesionValue = testCohesionObjective.CalculateValue(bestChromosome.GetModules());
+            var ga = (GeneticAlgorithm)sender;
+            var best = (LinearLinkageEncoding)ga.BestChromosome;
 
-            var testCouplingObjective = new CouplingObjective(graph, 1);
-            var couplingValue = testCouplingObjective.CalculateValue(bestChromosome.GetModules());
+            var modules = best.GetModules();
 
-            el.Append($"{ga.GenerationsNumber}-{bestChromosome.Fitness}-{bestChromosome.GetModules().Count}-{cohesionValue}-{couplingValue}!");
+            var cohesionValue = objectives[0].CalculateValue(modules);
+            var couplingValue = objectives[1].CalculateValue(modules);
 
+            generationResultStringBuilder.Append(
+                $"{ga.GenerationsNumber}-{best.Fitness}-{modules.Count}-{cohesionValue}-{couplingValue}!"
+            );
         });
+
 
         // build genetic algorithm engine
         var geneticAlgorithmEngine = new GeneticAlgorithmEngineBuilder.Builder()
@@ -109,9 +114,12 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
             .GenerationMetricsHandler(generationRunEventHandler)
             .CreatingEngineForWeightedSumProblem();
 
-        var taskExecutor = new ParallelTaskExecutor();
-        taskExecutor.MinThreads = 2;
-        taskExecutor.MaxThreads = 40;
+        var taskExecutor = new ParallelTaskExecutor
+        {
+            MinThreads = 1,
+            MaxThreads = Environment.ProcessorCount
+        };
+
         geneticAlgorithmEngine.TaskExecutor = taskExecutor;
 
 
