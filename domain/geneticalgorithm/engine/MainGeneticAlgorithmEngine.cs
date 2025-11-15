@@ -94,16 +94,6 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
         {
             var ga = (GeneticAlgorithm)sender;
             var best = (LinearLinkageEncoding)ga.BestChromosome;
-
-            var modules = best.GetModules();
-
-            //   var cohesionValue = objectives[0].CalculateValue(modules);
-            //   var couplingValue = objectives[1].CalculateValue(modules);
-
-            //       generationResultStringBuilder.Append(
-            //           $"{ga.GenerationsNumber}-{best.Fitness}-{modules.Count}-{cohesionValue}-{couplingValue}!"
-            //       );
-
             bestFitnessValues.Add(ga.BestChromosome.Fitness.Value);
 
         });
