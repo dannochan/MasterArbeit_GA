@@ -40,7 +40,7 @@ class MainApp
             50, // Max generations
             2, // Tournament size
             0.5f, // Elitism count
-            0.01, // Converged gene rate
+            20, // Converged gene rate
             0.01, // Convergence rate
             0, // Count generation
             10, // Minimum Pareto set size
@@ -103,7 +103,7 @@ class MainApp
         var graph = dataObjectCenter.GetGraph();
         if (graph == null)
         {
-            
+
             logger.LogError("Graph is null after creation.");
             throw new InvalidOperationException("Graph is null, cannot proceed with graph processing.");
         }
@@ -155,7 +155,7 @@ class MainApp
             param.MaxGenerations,
             param.TournamentSize,
             0.1f, // Elitism count
-            0.01, // Converged gene rate
+            20, // Converged gene rate
             0.01, // Convergence rate
             0, // Count generation
             10, // Minimum Pareto set size

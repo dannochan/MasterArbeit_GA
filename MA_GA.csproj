@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Folder Include="data/" />
+    <Folder Include="domain/geneticalgorithm/termination/" />
     <Folder Include="output/" />
   </ItemGroup>
 

@@ -72,14 +72,14 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
     private GeneticAlgorithmExecutionResult ModularisewithWeightedSumFitnessFunction(GeneticAlgorithmParameter geneticAlgorithmParameter, Graph graph, MutationWeight? mutationWeight)
     {
 
-        var testCohesionObjective = new CohesionObjective(graph, 1);
-        
-            var testCouplingObjective = new CouplingObjective(graph, 1);
+        var cohesionObjective = new CohesionObjective(graph, 1);
+
+        var couplingObjective = new CouplingObjective(graph, 1);
 
         var objectives = new List<Objective>
         {
-                testCohesionObjective,
-                testCouplingObjective
+                cohesionObjective,
+                couplingObjective
                 //optional 
           //      new ModularityObjective(graph, 1),
         };
@@ -88,6 +88,7 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
         // string builder to store generation result
         var generationResultStringBuilder = new StringBuilder();
+        var bestFitnessValues = new List<double>();
         // event handler for generation run and metrics collection
         var generationRunEventHandler = new EventHandler((sender, args) =>
         {
@@ -96,12 +97,16 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
             var modules = best.GetModules();
 
-            var cohesionValue = objectives[0].CalculateValue(modules);
-            var couplingValue = objectives[1].CalculateValue(modules);
+            //   var cohesionValue = objectives[0].CalculateValue(modules);
+            //   var couplingValue = objectives[1].CalculateValue(modules);
 
-            generationResultStringBuilder.Append(
-                $"{ga.GenerationsNumber}-{best.Fitness}-{modules.Count}-{cohesionValue}-{couplingValue}!"
-            );
+            //       generationResultStringBuilder.Append(
+            //           $"{ga.GenerationsNumber}-{best.Fitness}-{modules.Count}-{cohesionValue}-{couplingValue}!"
+            //       );
+
+            Console.WriteLine($"Gen {ga.GenerationsNumber}: Best Fitness = {ga.BestChromosome.Fitness}");
+            bestFitnessValues.Add(ga.BestChromosome.Fitness.Value);
+
         });
 
 
@@ -151,7 +156,7 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
         {
             GeneticAlgorithmParameter = geneticAlgorithmParameter,
             GeneticAlgorithmResults = geneticAlgorithmResults,
-            GenerationResultString = generationResultStringBuilder.ToString()
+            GenerationResultString = string.Join("&", bestFitnessValues)
         };
     }
 

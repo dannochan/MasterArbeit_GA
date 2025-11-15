@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using MA_GA.domain.geneticalgorithm.crossover;
 using MA_GA.domain.geneticalgorithm.mutation;
 using MA_GA.domain.reinsertion;
+using MA_GA.domain.geneticalgorithm.termination;
 
 
 
@@ -78,7 +79,6 @@ public class GeneticAlgorithmEngineBuilder
             };
         }
 
-        // TODO: Termination need to be corrected for correct building 
 
         public GeneticAlgorithm CreatingEngineForWeightedSumProblem()
         {
@@ -88,6 +88,8 @@ public class GeneticAlgorithmEngineBuilder
             var selector = SingleObjectiveSelector();
             var crossover = CreateCrossover();
             var mutation = CreateMutatorn();
+            var termination = CreateTerminationStrategy();
+            var reinsertion = new GaElitistReinsertion(geneticAlgorithmParameter.ElitismCount);
 
 
             var geneticAlgorithmEngine = new GeneticAlgorithm(
@@ -97,10 +99,11 @@ public class GeneticAlgorithmEngineBuilder
                 crossover,
                 mutation)
             {
-                Termination = new GenerationNumberTermination(geneticAlgorithmParameter.MaxGenerations),
+                Termination = termination,
                 CrossoverProbability = geneticAlgorithmParameter.CrossoverRate,
                 MutationProbability = geneticAlgorithmParameter.MutationRate,
-                  Reinsertion = new GaElitistReinsertion(geneticAlgorithmParameter.ElitismCount)
+                Selection = selector,
+                Reinsertion = reinsertion
             };
 
             geneticAlgorithmEngine.GenerationRan += _generationMetricsHandler;
@@ -161,6 +164,12 @@ public class GeneticAlgorithmEngineBuilder
 
 
             return new Population(geneticAlgorithmParameter.PopulationSize, geneticAlgorithmParameter.PopulationSize, chromosome);
+        }
+
+        private ITermination CreateTerminationStrategy()
+        {
+            var geneticAlgorithmParameter = _geneticAlgorithmParameter;
+            return new ConvergenceTermination(geneticAlgorithmParameter.ConvergedGene, geneticAlgorithmParameter.ConvergenceRate, _geneticAlgorithmParameter.MaxGenerations);
         }
     }
 }
