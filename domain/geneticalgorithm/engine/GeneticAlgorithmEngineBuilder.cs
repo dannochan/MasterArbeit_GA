@@ -5,9 +5,11 @@ using MA_GA.domain.geneticalgorithm.parameter;
 using MA_GA.domain.geneticalgorithm.encoding;
 using System.Text.RegularExpressions;
 using MA_GA.domain.geneticalgorithm.crossover;
-using MA_GA.domain.geneticalgorithm.selection;
 using MA_GA.domain.geneticalgorithm.mutation;
 using MA_GA.domain.reinsertion;
+using MA_GA.domain.geneticalgorithm.termination;
+
+
 
 
 namespace MA_GA.domain.geneticalgorithm.engine;
@@ -21,6 +23,8 @@ public class GeneticAlgorithmEngineBuilder
         private MutationWeight _mutationWeight;
 
         private IFitness _fitness;
+
+        private EventHandler _generationMetricsHandler;
 
         public Builder Graph(Graph graph)
         {
@@ -47,6 +51,12 @@ public class GeneticAlgorithmEngineBuilder
             return this;
         }
 
+        public Builder GenerationMetricsHandler(EventHandler generationMetricsHandler)
+        {
+            _generationMetricsHandler = generationMetricsHandler;
+            return this;
+        }
+
         public GeneticAlgorithm CreatingEngineForMultiObjectiveProblem()
         {
             var geneticAlgorithmParameter = _geneticAlgorithmParameter;
@@ -69,7 +79,6 @@ public class GeneticAlgorithmEngineBuilder
             };
         }
 
-        // TODO: Termination need to be corrected for correct building 
 
         public GeneticAlgorithm CreatingEngineForWeightedSumProblem()
         {
@@ -79,19 +88,26 @@ public class GeneticAlgorithmEngineBuilder
             var selector = SingleObjectiveSelector();
             var crossover = CreateCrossover();
             var mutation = CreateMutatorn();
+            var termination = CreateTerminationStrategy();
+            var reinsertion = new GaElitistReinsertion(geneticAlgorithmParameter.ElitismCount);
 
-            return new GeneticAlgorithm(
+
+            var geneticAlgorithmEngine = new GeneticAlgorithm(
                 population,
                 _fitness,
                 selector,
                 crossover,
                 mutation)
             {
-                Termination = new GenerationNumberTermination(geneticAlgorithmParameter.MaxGenerations),
+                Termination = termination,
                 CrossoverProbability = geneticAlgorithmParameter.CrossoverRate,
                 MutationProbability = geneticAlgorithmParameter.MutationRate,
-                //  Reinsertion = new GaElitistReinsertion(geneticAlgorithmParameter.ElitismCount)
+                Selection = selector,
+                Reinsertion = reinsertion
             };
+
+            geneticAlgorithmEngine.GenerationRan += _generationMetricsHandler;
+            return geneticAlgorithmEngine;
         }
 
         private IMutation CreateMutatorn()
@@ -130,10 +146,11 @@ public class GeneticAlgorithmEngineBuilder
             Console.WriteLine($"Offspring Selection: {geneticAlgorithmParameter.OffspringSelection}");
             switch (geneticAlgorithmParameter.OffspringSelection)
             {
-                case "Roulette":
-                    return new RouletteWheelSelection();
-                default:
+                case "Tournament":
                     return new TournamentSelection(geneticAlgorithmParameter.TournamentSize, true);
+
+                default:
+                    return new RouletteWheelSelection();
             }
         }
 
@@ -145,19 +162,14 @@ public class GeneticAlgorithmEngineBuilder
                 ? LinearLinkageEncodingInitialiser.InitializeLinearLinkageEncodingWithGreedyAlgorithm(graph)
                 : Genotypeinitializer.GenerateGenotypeWithModulesForEachConnectedComponet(graph);
 
-            /*  for checking initial chromosome      
-            var initialChrome = geneticAlgorithmParameter.UseGreedyPartition
-                        ? LinearLinkageEncodingInitialiser.InitializeLinearLinkageEncodingWithGreedyAlgorithm(graph)
-                        : Genotypeinitializer.GenerateGenotypeWithModulesForEachConnectedComponet(graph);
-            var lle = (LinearLinkageEncoding)initialChrome;
 
-            Console.WriteLine("Initial Chromosome:");
-            lle.DisplayChromosome();
-            Console.WriteLine("END of Initial Chromosome");
+            return new Population(geneticAlgorithmParameter.PopulationSize, geneticAlgorithmParameter.PopulationSize, chromosome);
+        }
 
- */
-
-            return new Population(20, 100, chromosome);
+        private ITermination CreateTerminationStrategy()
+        {
+            var geneticAlgorithmParameter = _geneticAlgorithmParameter;
+            return new ConvergenceTermination(geneticAlgorithmParameter.ConvergedGene, geneticAlgorithmParameter.ConvergenceRate, _geneticAlgorithmParameter.MaxGenerations);
         }
     }
 }

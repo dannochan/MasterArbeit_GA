@@ -73,7 +73,7 @@ public abstract class Objective
     public double Evaluate(IChromosome chromosome)
     {
         var lle = new LinearLinkageEncoding(chromosome, graph);
-        return CalculateValue(lle.GetModules());
+        return CalculateValue(lle.GetModules().ToList());
     }
 
 }

@@ -114,11 +114,18 @@ public static class GraphService
             algo.Generate();
             algo.VisitedGraph = graph;
 
+            // layout
+            algo.GraphFormat.RankDirection = GraphvizRankDirection.LR;
+
+            algo.GraphFormat.Splines = GraphvizSplineType.Curved;
+            algo.GraphFormat.IsConcentrated = true;
+
             algo.CommonVertexFormat.Shape = GraphvizVertexShape.Rectangle;
             algo.FormatVertex += (sender, args) =>
             {
                 var vertex = args.Vertex;
                 args.VertexFormat.Label = vertex.Name + vertex.GetIndex();
+                args.VertexFormat.Group = vertex.Component;
 
                 args.VertexFormat.Shape = vertex.ObjectType == ObjectType.InformationObject
                     ? GraphvizVertexShape.Ellipse
@@ -141,6 +148,12 @@ public static class GraphService
                     //  Value = edge.RelationType.ToString()
                     Value = edge.EdgeNumber.ToString()
                 };
+                if (edge.Source.Component != edge.Target.Component)
+                {
+                    args.EdgeFormat.Style = GraphvizEdgeStyle.Dashed;
+                    args.EdgeFormat.IsConstrained = false;
+                    args.EdgeFormat.StrokeColor = GraphvizColor.Gray;
+                }
             };
 
 
@@ -148,10 +161,11 @@ public static class GraphService
 
         );
 
-        return graphviz;
+        return graphviz.Replace("digraph G {", "digraph G { overlap=\"false\";");
 
 
     }
+
 
     public static string DiplayGraphByComponents(AdjacencyGraph<DataObject, IObjectRelation> graph)
     {
@@ -201,22 +215,22 @@ public static class GraphService
     {
         var incidentElements = new List<ModularisableElement>();
 
-            var vertex = (DataObject)element;
-            var edges = graph.GetGraph().Edges
-                .Where(e => e.SourceObject.Equals(vertex) || e.TargetObject.Equals(vertex))
-                .ToList();
-            foreach (var edge in edges)
+        var vertex = (DataObject)element;
+        var edges = graph.GetGraph().Edges
+            .Where(e => e.SourceObject.Equals(vertex) || e.TargetObject.Equals(vertex))
+            .ToList();
+        foreach (var edge in edges)
+        {
+            if (vertex.Equals(edge.SourceObject))
             {
-                if(vertex.Equals(edge.SourceObject))
-                {
-                    incidentElements.Add(edge.TargetObject);
-                }
-                else
-                {
-                    incidentElements.Add(edge.SourceObject);
-                }
+                incidentElements.Add(edge.TargetObject);
             }
-        
+            else
+            {
+                incidentElements.Add(edge.SourceObject);
+            }
+        }
+
         return incidentElements;
     }
 

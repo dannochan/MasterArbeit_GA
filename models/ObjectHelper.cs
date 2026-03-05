@@ -1,4 +1,5 @@
 using System;
+using MA_GA.domain.geneticalgorithm.parameter;
 using Microsoft.Extensions.Logging;
 
 namespace MA_GA.Models;
@@ -15,23 +16,7 @@ public static class ObjectHelper
     {
         int elementIndex = 0;
         // map information objects
-        if (rawObject.informationObjects != null)
-        {
-            foreach (var item in rawObject.informationObjects)
-            {
-                dataObjectCenter.AddNodeToGraph(new DataObject(
-                    item.name,
-                    ObjectType.InformationObject,
-                    item.nameShort,
-                    item.externalComponent
-                ));
-            }
 
-        }
-        else
-        {
-            logger.LogError("InformationObjects is null");
-        }
 
         // map function objects
 
@@ -56,20 +41,38 @@ public static class ObjectHelper
             logger.LogError("FunctionObjects is null");
         }
 
+        if (rawObject.informationObjects != null)
+        {
+            foreach (var item in rawObject.informationObjects)
+            {
+                dataObjectCenter.AddNodeToGraph(new DataObject(
+                    item.name,
+                    ObjectType.InformationObject,
+                    item.nameShort,
+                    item.externalComponent,
+                    INDEX++ // Assigning an index to each information object
+                ));
+            }
+
+        }
+        else
+        {
+            logger.LogError("InformationObjects is null");
+        }
+
         // map relation objects
         if (rawObject.relations != null)
         {
             foreach (var item in rawObject.relations)
             {
+                var relationType = convertIntToRelationTyp(item.type);
                 dataObjectCenter.AddRelationToGraph(new ObjectRelation(
                     INDEX++,
-                   convertIntToRelationTyp(item.type),
+                    relationType,
                     dataObjectCenter.GetNodeObjectByName(item.from),
-                    dataObjectCenter.GetNodeObjectByName(item.to)
-
+                    dataObjectCenter.GetNodeObjectByName(item.to),
+                    ConvertRelationTypeToWeight(relationType, dataObjectCenter.GetDataObjectRelationWeight())
                 ));
-
-
             }
         }
         else
@@ -85,22 +88,24 @@ public static class ObjectHelper
     /// </summary>
     /// <param name="relationType">The type of relation to convert.</param>
     /// <returns>An integer representing the weight of the relation type. -1 indicates relation between information object</returns>
-    public static int ConvertRelationTypeToWeight(RelationType relationType)
+    public static double ConvertRelationTypeToWeight(RelationType relationType, DataObjectRelationWeight dataObjectRelationWeight)
     {
         return relationType switch
         {
-            RelationType.Konjunktion => 20,
-            RelationType.Disjunktion => 15,
-            RelationType.ExclusiveDisjunktion => 25,
-            RelationType.Create => 20,
-            RelationType.Read => 15,
-            RelationType.Update => 15,
-            RelationType.RelatedTo => 0,
-            RelationType.PartOf => 0,
-            RelationType.IsA => 0,
+            RelationType.Konjunktion => dataObjectRelationWeight.ConjunctionWeight,
+            RelationType.Disjunktion => dataObjectRelationWeight.DisjunctionWeight,
+            RelationType.ExclusiveDisjunktion => dataObjectRelationWeight.ExclusiveDisjunctionWeight,
+            RelationType.Create => dataObjectRelationWeight.CreateWeight,
+            RelationType.Read => dataObjectRelationWeight.ReadWeight,
+            RelationType.Update => dataObjectRelationWeight.UpdateWeight,
+            RelationType.Delete => dataObjectRelationWeight.DeleteWeight,
+            RelationType.RelatedTo => dataObjectRelationWeight.RelatedToWeight,
+            RelationType.PartOf => dataObjectRelationWeight.PartOfWeight,
+            RelationType.IsA => dataObjectRelationWeight.IsAWeight,
             _ => throw new ArgumentOutOfRangeException(nameof(relationType), "Invalid relation type")
         };
     }
+
 
     private static RelationType convertIntToRelationTyp(int type)
     {

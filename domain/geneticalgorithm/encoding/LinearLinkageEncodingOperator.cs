@@ -10,6 +10,7 @@ public sealed class LinearLinkageEncodingOperator
 {
     public static int COUNT_LOOP_TERMINATION = 100;
 
+
     public static LinearLinkageEncoding DivideRandomModule(LinearLinkageEncoding encoding)
     {
         var moduleWithMultipleGenes = encoding.GetModules()
@@ -22,7 +23,7 @@ public sealed class LinearLinkageEncodingOperator
         }
 
         var random = RandomizationProvider.Current;
-        var randomModule = random.GetInt(0, moduleWithMultipleGenes.Count - 1);
+        var randomModule = random.GetInt(0, moduleWithMultipleGenes.Count);
 
         var selectedModule = moduleWithMultipleGenes[randomModule];
 
@@ -135,6 +136,72 @@ public sealed class LinearLinkageEncodingOperator
 
     }
 
+    public static LinearLinkageEncoding RepairModulesWithOnlyInformationObjects(LinearLinkageEncoding lle)
+    {
+        var linkageGraph = lle.GetGraph();
+        var modules = new HashSet<Module>(lle.GetModules());
+
+        // Identify modules with only information objects that are not isolated
+        var invalidModules = lle.GetModules()
+            .Where(m => m.GetIndices().Count >= 1
+                        && m.GetIndices().All(index => linkageGraph.GetModularisableElementByIndex(index) is DataObject dataObject && dataObject.ObjectType == ObjectType.InformationObject))
+            .ToList();
+
+        var rnd = RandomizationProvider.Current;
+        for (int i = 0; i < invalidModules.Count; i++)
+        {
+            if (invalidModules[i].GetIndices().Count == 1)
+            {
+                // If the module has only information objects, randomly assign one to a neighboring module
+                var neighbors = ModuleInformationService.GetModuleNeighbors(invalidModules[i], lle);
+                if (neighbors.Count == 0) continue;
+
+                var selectedNeighbor = neighbors[rnd.GetInt(0, neighbors.Count)];
+
+                // Move one index to the neighboring module
+                var indexToMove = invalidModules[i].GetIndices()[rnd.GetInt(0, invalidModules[i].GetIndices().Count)];
+                invalidModules[i].RemoveIndex(indexToMove);
+                selectedNeighbor.AddIndex(indexToMove);
+
+                if (invalidModules[i].GetIndices().Count == 0)
+                {
+                    // Mark for removal after the loop to avoid modifying collection during iteration
+                    modules.Remove(invalidModules[i]);
+                    // remove module if it has no indices
+                }
+            }
+            else
+            {
+                // If the module has multiple information objects, move all indices to a neighboring module
+                var neighbors = ModuleInformationService.GetModuleNeighbors(invalidModules[i], lle);
+                if (neighbors.Count == 0) continue;
+
+                var selectedNeighbor = neighbors[rnd.GetInt(0, neighbors.Count)];
+
+                // Move all indices to the neighboring module
+                var indices = new List<int>(invalidModules[i].GetIndices());
+                foreach (var indexToMove in indices)
+                {
+                    invalidModules[i].RemoveIndex(indexToMove);
+                    selectedNeighbor.AddIndex(indexToMove);
+                }
+
+                if (invalidModules[i].GetIndices().Count == 0)
+                {
+                    // Mark for removal after the loop to avoid modifying collection during iteration
+                    modules.Remove(invalidModules[i]);
+                }
+            }
+
+        }
+
+        // Remove any modules that have no indices
+        var newModule = modules.Where(m => m.GetIndices().Count != 0).ToList();
+
+        // Update the LinearLinkageEncoding with the repaired modules
+        return UpdateIntegerGenes(newModule, lle);
+    }
+
     public static LinearLinkageEncoding UpdateIntegerGenes(List<Module> effectedModules, LinearLinkageEncoding encoding)
     {
 
@@ -155,7 +222,7 @@ public sealed class LinearLinkageEncodingOperator
     public static void UpdateModule(Module module, List<Gene> integerGenes)
     {
         // get a list of index of element in module
-        var indices = module.GetIndices(); // order does not matter
+        var indices = module.GetIndices().ToList(); // order does not matter
 
         for (int i = 0; i < indices.Count - 1; i++)
         {
@@ -176,7 +243,7 @@ public sealed class LinearLinkageEncodingOperator
         var repaired = new LinearLinkageEncoding(lle.GetGraph(), lle.GetIntegerGenes());
         int attempt = 0;
 
-        int maxAttempts = 10;
+        int maxAttempts = 3;
         while (!repaired.IsValid() && attempt < maxAttempts)
         {
             attempt++;
@@ -204,6 +271,12 @@ public sealed class LinearLinkageEncodingOperator
             if (LinearLinkageEncodingInformationService.IsMonolith(repaired))
             {
                 repaired = RandomlySplitUpModulesV2(repaired);
+            }
+
+            // step 5: Repair modules that consist only of information objects
+            if (LinearLinkageEncodingInformationService.IsModuleWithOnlyInformationObjects(repaired))
+            {
+                repaired = RepairModulesWithOnlyInformationObjects(repaired);
             }
 
             var allModules = repaired.GetModules();

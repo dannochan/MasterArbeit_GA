@@ -18,7 +18,7 @@ public class GeneticAlgorithmParameter
     public int TournamentSize { get; set; }
     public float ElitismCount { get; set; }
 
-    public double ConvergedGeneRate { get; set; }
+    public int ConvergedGene { get; set; }
 
     public double ConvergenceRate { get; set; }
     public int CountGeneration { get; set; }
@@ -41,13 +41,13 @@ public class GeneticAlgorithmParameter
         int maxGenerations,
         int tournamentSize,
         float elitismCount,
-        double convergedGeneRate,
+        int convergedGeneRate,
         double convergenceRate,
         int countGeneration,
         int minimumParetoSetSize,
         int maximumParetoSetSize,
-        bool useWeightedSumMethod = false,
-        bool useGreedyPartition = true)
+        bool useWeightedSumMethod,
+        bool useGreedyPartition)
     {
         _chromosomeEncoding = chromosomeEncoding;
         OffspringSelection = offspringSelection;
@@ -60,13 +60,17 @@ public class GeneticAlgorithmParameter
         MaxGenerations = maxGenerations;
         TournamentSize = tournamentSize;
         ElitismCount = elitismCount;
-        ConvergedGeneRate = convergedGeneRate;
+        ConvergedGene = convergedGeneRate;
         ConvergenceRate = convergenceRate;
         CountGeneration = countGeneration;
         MinimumParetoSetSize = minimumParetoSetSize;
         MaximumParetoSetSize = maximumParetoSetSize;
         UseWeightedSumMethod = useWeightedSumMethod; // Default value, can be set to true if needed
         UseGreedyPartition = useGreedyPartition; // Default value, can be set to false if needed
+    }
+
+    public GeneticAlgorithmParameter()
+    {
     }
 
     public override string ToString()
@@ -83,7 +87,7 @@ public class GeneticAlgorithmParameter
                $"MaxGenerations={MaxGenerations}, " +
                $"TournamentSize={TournamentSize}, " +
                $"ElitismCount={ElitismCount}, " +
-               $"ConvergedGeneRate={ConvergedGeneRate}, " +
+               $"ConvergedGeneRate={ConvergedGene}, " +
                $"ConvergenceRate={ConvergenceRate}, " +
                $"CountGeneration={CountGeneration}, " +
                $"MinimumParetoSetSize={MinimumParetoSetSize}, " +

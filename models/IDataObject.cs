@@ -31,7 +31,7 @@ public interface IDataObject
     List<IDataObject> OriginObjects { get; set; }
     List<IDataObject> TargetObjects { get; set; }
 
-    int Weight { get; set; }
+    double Weight { get; set; }
     string Component { get; set; }
 
     string ToString();
@@ -39,7 +39,7 @@ public interface IDataObject
     string ReadOriginObjects();
     string ReadTargetObjects();
 
-    void UpdateWeight(int weight);
+    void UpdateWeight(double weight);
 
     int GetIndex();
 

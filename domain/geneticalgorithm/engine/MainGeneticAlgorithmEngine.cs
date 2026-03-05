@@ -1,9 +1,11 @@
 using System;
+using System.Text;
 using GeneticSharp;
 using MA_GA.domain.geneticalgorithm.encoding;
 using MA_GA.domain.geneticalgorithm.fitnessfunction;
 using MA_GA.domain.geneticalgorithm.objective;
 using MA_GA.domain.geneticalgorithm.parameter;
+using MA_GA.domain.module;
 using MA_GA.models.optimizationresult;
 using MA_GA.Models;
 
@@ -13,7 +15,6 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 {
 
     private static readonly float RANDOM_GENERTATED_SEED = 12345f;
-
 
     public GeneticAlgorithmExecutionResult run(Graph graph, GeneticAlgorithmParameter geneticAlgorithmParameter, MutationWeight? mutationWeight = null)
     {
@@ -34,20 +35,22 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
 
     }
 
+    /**/
     private GeneticAlgorithmExecutionResult ModularisewithMultiObjectiveFitnessFunction(GeneticAlgorithmParameter geneticAlgorithmParameter, Graph graph, MutationWeight mutationWeight)
     {
 
         // TODO: ADD objective when available
 
-        var fitnessFunction = new MultiObjectiveFitnessFunction();
+        //  var fitnessFunction = new MultiObjectiveFitnessFunction();
 
         // build genetic algorithm engine
         var geneticAlgorithmEngine = new GeneticAlgorithmEngineBuilder.Builder()
             .Graph(graph)
             .GeneticAlgorithmParameter(geneticAlgorithmParameter)
-            .Fitness(new MultiObjectiveFitnessFunction())
+            .Fitness(/*fitnessFunction*/null) // TODO: add multi objective fitness function
             .MutationWeight(mutationWeight)
             .CreatingEngineForMultiObjectiveProblem();
+
 
 
         // run the genetic algorithm
@@ -69,15 +72,32 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
     private GeneticAlgorithmExecutionResult ModularisewithWeightedSumFitnessFunction(GeneticAlgorithmParameter geneticAlgorithmParameter, Graph graph, MutationWeight? mutationWeight)
     {
 
-        // TODO: move to genetic parameter settings
+        var cohesionObjective = new CohesionObjective(graph, 1);
+
+        var couplingObjective = new CouplingObjective(graph, 1);
+
         var objectives = new List<Objective>
         {
-                 new CohesionObjective(graph, 1),
-                  new CouplingObjective(graph, 1),
-                  new ModularityObjective(graph, 1),
+                cohesionObjective,
+                couplingObjective
+                //optional 
+          //      new ModularityObjective(graph, 1),
         };
 
         var fitnessFunction = new FitnessFunction(objectives, graph);
+
+        // string builder to store generation result
+        var generationResultStringBuilder = new StringBuilder();
+        var bestFitnessValues = new List<double>();
+        // event handler for generation run and metrics collection
+        var generationRunEventHandler = new EventHandler((sender, args) =>
+        {
+            var ga = (GeneticAlgorithm)sender;
+            var best = (LinearLinkageEncoding)ga.BestChromosome;
+            bestFitnessValues.Add(ga.BestChromosome.Fitness.Value);
+
+        });
+
 
         // build genetic algorithm engine
         var geneticAlgorithmEngine = new GeneticAlgorithmEngineBuilder.Builder()
@@ -85,11 +105,15 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
             .GeneticAlgorithmParameter(geneticAlgorithmParameter)
             .MutationWeight(mutationWeight)
             .Fitness(fitnessFunction)
+            .GenerationMetricsHandler(generationRunEventHandler)
             .CreatingEngineForWeightedSumProblem();
 
-        var taskExecutor = new ParallelTaskExecutor();
-        taskExecutor.MinThreads = 1;
-        taskExecutor.MaxThreads = 20;
+        var taskExecutor = new ParallelTaskExecutor
+        {
+            MinThreads = 1,
+            MaxThreads = Environment.ProcessorCount
+        };
+
         geneticAlgorithmEngine.TaskExecutor = taskExecutor;
 
 
@@ -100,13 +124,13 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
         Console.WriteLine($"Best Fitness: {geneticAlgorithmEngine.BestChromosome.Fitness.Value}");
         // print modules of the best chromosome
         var BestChromosome = new LinearLinkageEncoding(geneticAlgorithmEngine.BestChromosome, graph);
+
         BestChromosome?.DisplayChromosome();
+
 
         var time = geneticAlgorithmEngine.TimeEvolving;
         Console.WriteLine($"Time taken: {time.TotalSeconds} seconds");
 
-
-        // testing result class
         var geneticAlgorithmResults = new GeneticAlgorithmResults
         {
             graph = graph,
@@ -116,28 +140,14 @@ public class MainGeneticAlgorithmEngine : GeneticAlgorithmEngine
             BestFitness = geneticAlgorithmEngine.BestChromosome.Fitness.Value
         };
 
-        // Display the results
 
         return new GeneticAlgorithmExecutionResult()
         {
-            GeneticAlgorithmResults = geneticAlgorithmResults
+            GeneticAlgorithmParameter = geneticAlgorithmParameter,
+            GeneticAlgorithmResults = geneticAlgorithmResults,
+            GenerationResultString = string.Join("&", bestFitnessValues)
         };
     }
 
 }
 
-
-
-
-internal class MultiObjectiveFitnessFunction : IFitness
-{
-    public MultiObjectiveFitnessFunction()
-    {
-    }
-
-    public double Evaluate(IChromosome chromosome)
-    {
-        chromosome.Fitness = 0.0; // Placeholder for actual fitness evaluation logic
-        return chromosome.Fitness.Value;
-    }
-}

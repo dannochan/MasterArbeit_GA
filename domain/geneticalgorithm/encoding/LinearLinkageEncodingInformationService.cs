@@ -1,6 +1,7 @@
 using System;
 using GeneticSharp;
 using MA_GA.domain.module;
+using MA_GA.Models;
 
 namespace MA_GA.domain.geneticalgorithm.encoding;
 
@@ -104,6 +105,11 @@ public sealed class LinearLinkageEncodingInformationService
             return false;
         }
 
+        if (IsModuleWithOnlyInformationObjects(linearLinkageEncoding))
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -121,7 +127,7 @@ public sealed class LinearLinkageEncodingInformationService
                 alleleDictionary[currentAllele]++;
                 if (alleleDictionary[currentAllele] > 2)
                 {
-                 //   Console.WriteLine($"Allele {currentAllele} appears more than twice in the encoding.");
+                    //   Console.WriteLine($"Allele {currentAllele} appears more than twice in the encoding.");
                     return false; // Allele value appears more than onc
                 }
 
@@ -157,5 +163,13 @@ public sealed class LinearLinkageEncodingInformationService
         return GetNumberOfNonIsolatedModules(encoding) == 1; ;
     }
 
+    public static bool IsModuleWithOnlyInformationObjects(LinearLinkageEncoding encoding)
+    {
+        var graph = encoding.GetGraph();
 
+        var modules = encoding.GetModules();
+
+        return modules.Any(module =>
+            module.GetIndices().All(index => graph.GetModularisableElementByIndex(index) is DataObject dataObject && dataObject.ObjectType == ObjectType.InformationObject));
+    }
 }

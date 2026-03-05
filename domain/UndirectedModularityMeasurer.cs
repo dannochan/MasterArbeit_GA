@@ -102,6 +102,6 @@ public class UndirectedModularityMeasurer<TVertex>
             mod += 2.0 * edgeWeightInPartition[p] - expected;
         }
         mod /= 2.0 * _m;
-        return mod;
+        return mod * 100; // return as percentage
     }
 }

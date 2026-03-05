@@ -4,6 +4,7 @@ using GeneticSharp;
 using MA_GA.domain.module;
 using MA_GA.models.enums;
 using MA_GA.Models;
+using QuikGraph;
 using Module = MA_GA.domain.module.Module;
 
 namespace MA_GA.domain.geneticalgorithm.objective;
@@ -18,35 +19,78 @@ public class CohesionObjective : Objective
     }
     public override double CalculateValue(List<Module> modules)
     {
+        var maxIOWeight = graph.GetDataObjectRelationWeight().GetMaximalInformationObjectRelationWeight();
+        var maxBpsWeight = graph.GetDataObjectRelationWeight().GetMaximalFunctionWeight();
+        var maxBpsIoWeight = graph.GetDataObjectRelationWeight().GetMaximalBPStoIOWeight();
         var visitedEdges = new HashSet<IObjectRelation>();
-        return modules.Where(module => !ModuleInformationService.IsIsolated(module, graph)).Sum(module =>
-        {
-            var edges = ModuleInformationService.GetModuleEdges(module, graph);
-
-            double sum = 0.0;
-            foreach (var edge in edges)
+        return modules
+            .Where(module => !ModuleInformationService.IsIsolated(module, graph))
+            .Sum(module =>
             {
-                if (visitedEdges.Contains(edge))
-                {
-                    continue; // Skip already visited edges
-                }
-                visitedEdges.Add(edge);
-                var source = edge.Source;
-                var target = edge.Target;
 
-                if (module.CheckIndexInModule(source.GetIndex()) && module.CheckIndexInModule(target.GetIndex()))
-                {
-                    sum += edge.Weight;
 
-                }
-                else
+                var edges = ModuleInformationService.GetModuleEdges(module, graph);
+                var edgeTypeCounts = CalculateObjectTypeCounts(module);
+                double bpsCount = edgeTypeCounts["BPS"];
+                double ioCount = edgeTypeCounts["IO"];
+
+                double maxMpsContribution = (bpsCount * (bpsCount - 1.0)) / 2.0;
+                double maxIoContribution = (ioCount * (ioCount - 1.0)) / 2.0;
+                double maxBpsIoContribution = bpsCount * ioCount;
+                double maxCohesion = maxIoContribution * maxIOWeight + maxMpsContribution * maxBpsWeight + maxBpsIoContribution * maxBpsIoWeight;
+
+                double totalEdgeWeightOfTheModule = 0.0;
+                foreach (var edge in edges)
                 {
-                    sum += edge.Weight / 2.0;
+                    if (visitedEdges.Contains(edge))
+                        continue;
+                    visitedEdges.Add(edge);
+                    bool sourceInModule = module.CheckIndexInModule(edge.Source.GetIndex());
+                    bool targetInModule = module.CheckIndexInModule(edge.Target.GetIndex());
+
+                    if (sourceInModule && targetInModule)
+                    {
+
+                        totalEdgeWeightOfTheModule += edge.Weight;
+                    }
                 }
 
+                double actualCohesion = maxCohesion > 0.0 ? totalEdgeWeightOfTheModule / maxCohesion : 0.0;
+                double objectTypeCount = bpsCount + ioCount;
+                double vertexCount = (double)graph.GetGraph().VertexCount;
+                double weightedCohesion = vertexCount > 0.0 ? actualCohesion * (objectTypeCount / vertexCount) : 0.0;
+                return weightedCohesion * 100; // return as percentage
+            });
+    }
+
+    private Dictionary<string, double> CalculateObjectTypeCounts(Module module)
+    {
+        var edgeTypeCounts = new Dictionary<string, double>
+            {
+                { "BPS", 0.0 },
+                { "IO", 0.0 }
+            };
+
+        var vertexIndicesInModule = new HashSet<int>(module.GetIndices().ToList());
+        foreach (var vertexIndex in vertexIndicesInModule)
+        {
+            var vertex = graph.GetGraph().Vertices.FirstOrDefault(v => v.GetIndex() == vertexIndex);
+            if (vertex != null)
+            {
+                var objectType = vertex.ObjectType;
+                if (objectType == ObjectType.FunctionObject)
+                {
+                    edgeTypeCounts["BPS"] += 1.0;
+                }
+                else if (objectType == ObjectType.InformationObject)
+                {
+                    edgeTypeCounts["IO"] += 1.0;
+                }
             }
-            return sum;
-        });
+        }
+
+
+        return edgeTypeCounts;
     }
 
     public override string GetObjectiveName()
