@@ -140,4 +140,126 @@ public class ObjectiveTests
 
         result.Should().BeGreaterThan(0.0);
     }
+
+    // --- CouplingObjective construction ---
+
+    [Fact]
+    public void CouplingObjective_Constructor_NullGraph_ThrowsArgumentNullException()
+    {
+        var act = () => new CouplingObjective(null!, 1.0);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void CouplingObjective_Constructor_SetsWeight()
+    {
+        var graph = BuildIsolatedGraph();
+        var objective = new CouplingObjective(graph, 0.7);
+
+        objective.GetWeight().Should().Be(0.7);
+    }
+
+    [Fact]
+    public void CouplingObjective_GetObjectiveType_ReturnsMinimiseCoupling()
+    {
+        var graph = BuildIsolatedGraph();
+        var objective = new CouplingObjective(graph, 1.0);
+
+        objective.GetObjectiveType().Should().Be(ObjectiveType.MINIMISE_COUPLING);
+    }
+
+    [Fact]
+    public void CouplingObjective_GetOptimizationType_ReturnsMinimum()
+    {
+        var graph = BuildIsolatedGraph();
+        var objective = new CouplingObjective(graph, 1.0);
+
+        objective.GetOptimizationType().Should().Be(OptimizationType.Minimum);
+    }
+
+    // --- CouplingObjective.CalculateValue ---
+
+    // Graph helpers for coupling scenarios
+    // 2-node graph: A(0) → B(1), weight=1.0
+    private static Graph BuildTwoNodeGraph(out DataObject a, out DataObject b)
+    {
+        var graph = new Graph(new DataObjectRelationWeight());
+        a = new DataObject("A", ObjectType.FunctionObject, "a", false, 0);
+        b = new DataObject("B", ObjectType.FunctionObject, "b", false, 1);
+        graph.AddNodeToGraph(a);
+        graph.AddNodeToGraph(b);
+        graph.AddRelationToGraph(new ObjectRelation(0, RelationType.Read, a, b, 1.0));
+        return graph;
+    }
+
+    // 3-node chain graph: A(0) → B(1) → C(2), weight=1.0 each
+    private static Graph BuildThreeNodeChainGraph(out DataObject a, out DataObject b, out DataObject c)
+    {
+        var graph = new Graph(new DataObjectRelationWeight());
+        a = new DataObject("A", ObjectType.FunctionObject, "a", false, 0);
+        b = new DataObject("B", ObjectType.FunctionObject, "b", false, 1);
+        c = new DataObject("C", ObjectType.FunctionObject, "c", false, 2);
+        graph.AddNodeToGraph(a);
+        graph.AddNodeToGraph(b);
+        graph.AddNodeToGraph(c);
+        graph.AddRelationToGraph(new ObjectRelation(0, RelationType.Read, a, b, 1.0));
+        graph.AddRelationToGraph(new ObjectRelation(1, RelationType.Read, b, c, 1.0));
+        return graph;
+    }
+
+    [Fact]
+    public void CouplingObjective_AllEdgesInternal_ReturnsZero()
+    {
+        // Graph: A→B (weight 1)
+        // Module {A, B}: A→B is fully internal → no boundary edges → 0% coupling
+        var graph = BuildTwoNodeGraph(out var a, out var b);
+        var objective = new CouplingObjective(graph, 1.0);
+        var module = new Module();
+        module.AddIndex(0); // A
+        module.AddIndex(1); // B
+
+        var result = objective.CalculateValue(new List<Module> { module });
+
+        result.Should().Be(0.0);
+    }
+
+    [Fact]
+    public void CouplingObjective_AllEdgesBoundary_ReturnsOneHundred()
+    {
+        // Graph: A(0)→B(1)
+        // Module {A} (non-isolated), Module {B} (isolated — no outgoing edges)
+        // Only {A} is processed; A→B is a boundary edge (B not in {A})
+        // totalCoupling=1, internal=0 → 100% coupling
+        var graph = BuildTwoNodeGraph(out var a, out var b);
+        var objective = new CouplingObjective(graph, 1.0);
+        var mA = new Module(); mA.AddIndex(0);
+        var mB = new Module(); mB.AddIndex(1);
+
+        var result = objective.CalculateValue(new List<Module> { mA, mB });
+
+        result.Should().Be(100.0);
+    }
+
+    [Fact]
+    public void CouplingObjective_OneBoundaryOneInternal_ReturnsOneThird()
+    {
+        // Graph: A(0)→B(1)→C(2), each edge weight=1
+        // Module {A,B}: A→B is internal; B→C is boundary (weight 1 each)
+        // Module {C}: isolated (no outgoing) → filtered out
+        // GetModuleEdges uses GetVertexEdgesByIndex (source OR target), so A→B appears
+        // twice in the internal sum (once from A's list, once from B's list):
+        //   sumOfModuleEdgesWeights = 2 × weight(A→B) = 2
+        //   totalCoupling           = 1 × weight(B→C) = 1
+        //   allEdgesWeights         = 1 + 2 = 3
+        //   result                  = 1/3 × 100 ≈ 33.33%
+        var graph = BuildThreeNodeChainGraph(out _, out _, out _);
+        var objective = new CouplingObjective(graph, 1.0);
+        var mAB = new Module(); mAB.AddIndex(0); mAB.AddIndex(1);
+        var mC  = new Module(); mC.AddIndex(2);
+
+        var result = objective.CalculateValue(new List<Module> { mAB, mC });
+
+        result.Should().BeApproximately(100.0 / 3.0, 0.001);
+    }
 }
