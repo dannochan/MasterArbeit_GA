@@ -25,7 +25,7 @@ public class CouplingObjective : Objective
             if (ModuleInformationService.IsIsolated(module, graph))
                 continue;
 
-            var edgesOfModule = ModuleInformationService.GetModuleEdges(module, graph).Where(edge => module.CheckIndexInModule(edge.Source.GetIndex()) && module.CheckIndexInModule(edge.Target.GetIndex())).ToList();
+            var edgesOfModule = ModuleInformationService.GetModuleEdges(module, graph).Where(edge => module.CheckIndexInModule(edge.Source.GetIndex()) && module.CheckIndexInModule(edge.Target.GetIndex())).Distinct().ToList();
             sumOfModuleEdgesWeights += edgesOfModule.Sum(edge => edge.Weight);
 
             var boundaryEdgesOfModuleWithoutBothIO = ModuleInformationService.GetBoundaryEdgesOfModule(module, graph).ToList();
