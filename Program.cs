@@ -280,7 +280,6 @@ class MainApp
             Console.WriteLine(GraphService.DiplayGraphByComponents(partitionResult));
             // generate DOT representation of the graph
 
-            //   CreateClusteredGraphAndDisplay(partitionResult);
         }
     }
 
@@ -297,12 +296,5 @@ class MainApp
 
     }
 
-    private static void CreateClusteredGraphAndDisplay(AdjacencyGraph<DataObject, IObjectRelation> partitionResult)
-    {
-        var newClusterGraph = GraphService.CreateClusteredGraph(partitionResult);
-        Console.WriteLine(newClusterGraph.ClustersCount);
-        var dotRepresentation = GraphService.GenerateClusteredGraphToDOT(newClusterGraph);
-        Console.WriteLine("Graphviz DOT representation:");
-        Console.WriteLine(dotRepresentation);
-    }
+
 }
